@@ -27,13 +27,17 @@ private:
 	void Wander();
 
 protected:
-	// Properties
+	// Default Properties
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float DebugLineThickness = 15.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float WanderMovementRadius = 1000.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float WanderArriveRadius = 20.0f;
+
+	// Instance Properties
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ForwardLineTraceLength = 200.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WanderMovementRadius = 1000.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WanderArriveRadius = 20.0f;
 
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;

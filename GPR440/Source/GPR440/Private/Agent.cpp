@@ -39,16 +39,33 @@ void AAgent::Tick(float DeltaTime)
 
 	// Obstacle Avoidance
 	const FVector lineTraceStart = GetActorLocation();
+	const FVector forwardVector = GetActorForwardVector();
 	
 	// Forward line trace
+	const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
 	FHitResult outForwardLineTraceHit;
-	const FVector forwardLineTraceEnd = lineTraceStart + GetActorForwardVector() * ForwardLineTraceLength;
 	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
-	FColor forwardLineTraceDebugColor;
-	forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	
-	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, 10);
+	FColor forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
+	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+
+	// left whisker line trace
+	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-45.0f, FVector::UpVector);
+	const FVector leftLineTraceEnd = lineTraceStart + leftWiskerDir * ForwardLineTraceLength;
+	FHitResult outLeftLineTraceHit;
+	pWorld->LineTraceSingleByChannel(outLeftLineTraceHit, lineTraceStart, leftLineTraceEnd,
+		ECollisionChannel::ECC_Visibility);
+	FColor leftLineTraceDebugColor = outLeftLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
+	DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+
+	// right whisker line trace
+	FVector rightWiskerDir = forwardVector.RotateAngleAxis(45.0f, FVector::UpVector);
+	const FVector rightLineTraceEnd = lineTraceStart + rightWiskerDir * ForwardLineTraceLength;
+	FHitResult outRightLineTraceHit;
+	pWorld->LineTraceSingleByChannel(outRightLineTraceHit, lineTraceStart, rightLineTraceEnd,
+		ECollisionChannel::ECC_Visibility);
+	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
+	DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	// Left whisker line trace
 	// Right whisker line trace
