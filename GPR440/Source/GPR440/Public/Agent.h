@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
 #include "Agent.generated.h"
 
 UCLASS()
-class GPR440_API AAgent : public APawn
+class GPR440_API AAgent : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -24,18 +24,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 private:
-	// Components
-	UPROPERTY(VisibleAnywhere)
-	UCapsuleComponent* mpCapsuleComponent;
-	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* mpSkeletalMeshComponent;
+	void Wander();
 
+protected:
 	// Properties
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float mForwardLineTraceLength = 200.0f;
+	float ForwardLineTraceLength = 200.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WanderArriveRadius = 20.0f;
+
+private:
+	UCharacterMovementComponent* mpCharacterMovementComponent;
+	FVector mWanderTarget;
 
 };
