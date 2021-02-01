@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Components/CapsuleComponent.h"
 #include "Agent.generated.h"
 
 UCLASS()
@@ -31,6 +30,8 @@ protected:
 	// Properties
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ForwardLineTraceLength = 200.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WanderMovementRadius = 1000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float WanderArriveRadius = 20.0f;
 

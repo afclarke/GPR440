@@ -27,6 +27,7 @@ void AAgent::BeginPlay()
 	mWanderTarget = GetActorLocation();
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
 // Called every frame
 void AAgent::Tick(float DeltaTime)
 {
@@ -44,13 +45,16 @@ void AAgent::Tick(float DeltaTime)
 	const FVector forwardLineTraceEnd = lineTraceStart + GetActorForwardVector() * ForwardLineTraceLength;
 	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
-	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, FColor::Green);
+	FColor forwardLineTraceDebugColor;
+	forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
+	
+	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, 10);
 
 	// Left whisker line trace
 	// Right whisker line trace
 }
+PRAGMA_ENABLE_OPTIMIZATION
 
-PRAGMA_DISABLE_OPTIMIZATION
 void AAgent::Wander()
 {
 	FVector curLocation = GetActorLocation();
@@ -60,7 +64,7 @@ void AAgent::Wander()
 	// arrived at wander target, get new random target
 	if(wanderDist <= WanderArriveRadius)
 	{
-		mWanderTarget = FMath::VRand() * 1000.0f;
+		mWanderTarget = FMath::VRand() * WanderMovementRadius;
 		mWanderTarget.Z = curLocation.Z;
 		wanderDir = mWanderTarget - curLocation;
 	}
@@ -69,4 +73,3 @@ void AAgent::Wander()
 	// move to wander target
 	mpCharacterMovementComponent->AddInputVector(wanderDir.GetSafeNormal());
 }
-PRAGMA_ENABLE_OPTIMIZATION
