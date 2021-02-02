@@ -42,24 +42,24 @@ void AAgent::Tick(float DeltaTime)
 	const FVector forwardVector = GetActorForwardVector();
 	
 	// Forward line trace
-	const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
+	/*const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
 	FHitResult outForwardLineTraceHit;
 	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);*/
 
 	// left whisker line trace
-	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-45.0f, FVector::UpVector);
+	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-WhiskerAngle, FVector::UpVector);
 	const FVector leftLineTraceEnd = lineTraceStart + leftWiskerDir * ForwardLineTraceLength;
 	FHitResult outLeftLineTraceHit;
 	pWorld->LineTraceSingleByChannel(outLeftLineTraceHit, lineTraceStart, leftLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor leftLineTraceDebugColor = outLeftLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
 	DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
-
+	
 	// right whisker line trace
-	FVector rightWiskerDir = forwardVector.RotateAngleAxis(45.0f, FVector::UpVector);
+	FVector rightWiskerDir = forwardVector.RotateAngleAxis(WhiskerAngle, FVector::UpVector);
 	const FVector rightLineTraceEnd = lineTraceStart + rightWiskerDir * ForwardLineTraceLength;
 	FHitResult outRightLineTraceHit;
 	pWorld->LineTraceSingleByChannel(outRightLineTraceHit, lineTraceStart, rightLineTraceEnd,
@@ -67,8 +67,19 @@ void AAgent::Tick(float DeltaTime)
 	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
 	DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
-	// Left whisker line trace
-	// Right whisker line trace
+	if (outLeftLineTraceHit.bBlockingHit)
+	{
+		mpCharacterMovementComponent->AddInputVector(rightWiskerDir);
+		UE_LOG(LogTemp, Warning, TEXT("LEFT BLOCK"));
+	}
+	else if (outRightLineTraceHit.bBlockingHit)
+	{
+		mpCharacterMovementComponent->AddInputVector(leftWiskerDir);
+		UE_LOG(LogTemp, Warning, TEXT("RIGHT BLOCK"));
+	}
+	
+	FVector mInputVector = mpCharacterMovementComponent->GetPendingInputVector();
+	//UE_LOG(LogTemp, Warning, TEXT("INPUT (%f, %f, %f)"), mInputVector.X, mInputVector.Y, mInputVector.Z);
 }
 PRAGMA_ENABLE_OPTIMIZATION
 
@@ -86,7 +97,9 @@ void AAgent::Wander()
 		wanderDir = mWanderTarget - curLocation;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("WANDER DIR (%f, %f, %f)"), wanderDir.X, wanderDir.Y, wanderDir.Z);
 	// move to wander target
-	mpCharacterMovementComponent->AddInputVector(wanderDir.GetSafeNormal());
+	mWanderInput = wanderDir.GetSafeNormal();
+	mpCharacterMovementComponent->AddInputVector(mWanderInput);
+
+	DrawDebugSphere(GetWorld(), mWanderTarget, WanderArriveRadius, 100, FColor::Magenta);
 }

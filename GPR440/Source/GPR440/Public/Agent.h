@@ -38,9 +38,12 @@ protected:
 	// Instance Properties
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ForwardLineTraceLength = 200.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WhiskerAngle = 30.0f;
 
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;
 	FVector mWanderTarget;
+	FVector mWanderInput;
 
 };
