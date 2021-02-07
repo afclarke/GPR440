@@ -5,6 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "AIC_Agent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AAgent::AAgent()
@@ -25,6 +26,9 @@ void AAgent::BeginPlay()
 	Super::BeginPlay();
 
 	mWanderTarget = GetActorLocation();
+
+	mCollisionCount = 0;
+	OnActorBeginOverlap.AddDynamic(this, &AAgent::OnCollision);
 }
 
 PRAGMA_DISABLE_OPTIMIZATION
@@ -33,13 +37,17 @@ void AAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	mTarInput = FVector::ZeroVector;
+
 	Wander();
 	
 	const UWorld* pWorld = GetWorld();
 
 	// Obstacle Avoidance
-	const FVector lineTraceStart = GetActorLocation();
 	const FVector forwardVector = GetActorForwardVector();
+	const FVector leftVector = forwardVector.RotateAngleAxis(-90, FVector::UpVector);
+	const FVector rightVector = forwardVector.RotateAngleAxis(90, FVector::UpVector);
+	const FVector lineTraceStart = GetActorLocation() + forwardVector * (GetCapsuleComponent()->GetScaledCapsuleRadius() + 0.1f);
 	
 	// Forward line trace
 	/*const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
@@ -69,17 +77,16 @@ void AAgent::Tick(float DeltaTime)
 
 	if (outLeftLineTraceHit.bBlockingHit)
 	{
-		mpCharacterMovementComponent->AddInputVector(rightWiskerDir);
-		UE_LOG(LogTemp, Warning, TEXT("LEFT BLOCK"));
+		mTarInput += rightVector * AvoidInputMultiplier * (1.0f - outLeftLineTraceHit.Distance / (leftLineTraceEnd - lineTraceStart).Size());
 	}
 	else if (outRightLineTraceHit.bBlockingHit)
 	{
-		mpCharacterMovementComponent->AddInputVector(leftWiskerDir);
-		UE_LOG(LogTemp, Warning, TEXT("RIGHT BLOCK"));
+		mTarInput += leftVector * AvoidInputMultiplier * (1.0f - outRightLineTraceHit.Distance / (rightLineTraceEnd - lineTraceStart).Size());
 	}
-	
-	FVector mInputVector = mpCharacterMovementComponent->GetPendingInputVector();
-	//UE_LOG(LogTemp, Warning, TEXT("INPUT (%f, %f, %f)"), mInputVector.X, mInputVector.Y, mInputVector.Z);
+
+	mTarInput.Normalize();
+	mCurInput = FMath::Lerp(mCurInput, mTarInput, DeltaTime * MoveInputLerpScalar);
+	mpCharacterMovementComponent->AddInputVector(mCurInput);
 }
 PRAGMA_ENABLE_OPTIMIZATION
 
@@ -99,7 +106,13 @@ void AAgent::Wander()
 
 	// move to wander target
 	mWanderInput = wanderDir.GetSafeNormal();
-	mpCharacterMovementComponent->AddInputVector(mWanderInput);
+	mTarInput += mWanderInput;
 
 	DrawDebugSphere(GetWorld(), mWanderTarget, WanderArriveRadius, 100, FColor::Magenta);
+}
+
+void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)
+{
+	mCollisionCount++;
+	OnCollisionEvent(mCollisionCount);
 }

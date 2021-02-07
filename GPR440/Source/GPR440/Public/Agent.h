@@ -40,10 +40,23 @@ protected:
 	float ForwardLineTraceLength = 200.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float WhiskerAngle = 30.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MoveInputLerpScalar = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AvoidInputMultiplier = 5.0f;
 
+	UFUNCTION()
+	void OnCollision(AActor* overlappedActor, AActor* otherActor);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCollisionEvent(int32 collisionCount);
+	
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;
 	FVector mWanderTarget;
 	FVector mWanderInput;
 
+	FVector mTarInput;
+	FVector mCurInput;
+
+	int32 mCollisionCount;
 };
