@@ -6,6 +6,7 @@
 #include "AIC_Agent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AAgent::AAgent()
@@ -28,6 +29,7 @@ void AAgent::BeginPlay()
 	mWanderTarget = GetActorLocation();
 
 	mCollisionCount = 0;
+	mGoalCount = -1;
 	OnActorBeginOverlap.AddDynamic(this, &AAgent::OnCollision);
 }
 
@@ -107,6 +109,9 @@ void AAgent::Wander()
 	// arrived at wander target, get new random target
 	if(wanderDist <= WanderArriveRadius)
 	{
+		mGoalCount++;
+		OnCollisionEvent(GetFitness());
+		
 		mWanderTarget = FMath::VRand() * WanderMovementRadius;
 		mWanderTarget.Z = curLocation.Z;
 		wanderDir = mWanderTarget - curLocation;
@@ -119,8 +124,13 @@ void AAgent::Wander()
 	DrawDebugSphere(GetWorld(), mWanderTarget, WanderArriveRadius, 100, FColor::Magenta);
 }
 
+void AAgent::Mutate()
+{
+	
+}
+
 void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)
 {
 	mCollisionCount++;
-	OnCollisionEvent(mCollisionCount);
+	OnCollisionEvent(GetFitness());
 }

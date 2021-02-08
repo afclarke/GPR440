@@ -12,19 +12,20 @@ class GPR440_API AAgent : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	AAgent();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
 	void Wander();
+
+public:
+	void Mutate();
+	int32 GetFitness() { return mGoalCount - mCollisionCount; }
 
 protected:
 	// Default Properties
@@ -33,21 +34,23 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float WanderMovementRadius = 1000.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float WanderArriveRadius = 20.0f;
+	float WanderArriveRadius = 75.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MoveInputLerpScalar = 2.5f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MutationRate = 0.05f;
 
 	// Instance Properties
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ForwardLineTraceLength = 200.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	float ForwardLineTraceLength = 500.0f;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	float WhiskerLineTraceLength = 200.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WhiskerAngle = 30.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MoveInputLerpScalar = 5.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ForwardAvoidInputScalar = 5.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WhiskerAvoidInputScalar = 20.0f;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	float WhiskerAngle = 40.0f;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	float ForwardAvoidInputScalar = 20.0f;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	float WhiskerAvoidInputScalar = 50.0f;
 
 	UFUNCTION()
 	void OnCollision(AActor* overlappedActor, AActor* otherActor);
@@ -63,4 +66,5 @@ private:
 	FVector mCurInput;
 
 	int32 mCollisionCount;
+	int32 mGoalCount;
 };
