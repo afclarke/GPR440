@@ -31,7 +31,6 @@ void AAgent::BeginPlay()
 	OnActorBeginOverlap.AddDynamic(this, &AAgent::OnCollision);
 }
 
-PRAGMA_DISABLE_OPTIMIZATION
 // Called every frame
 void AAgent::Tick(float DeltaTime)
 {
@@ -50,16 +49,16 @@ void AAgent::Tick(float DeltaTime)
 	const FVector lineTraceStart = GetActorLocation() + forwardVector * (GetCapsuleComponent()->GetScaledCapsuleRadius() + 0.1f);
 	
 	// Forward line trace
-	/*const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
+	const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
 	FHitResult outForwardLineTraceHit;
 	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);*/
+	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	// left whisker line trace
 	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-WhiskerAngle, FVector::UpVector);
-	const FVector leftLineTraceEnd = lineTraceStart + leftWiskerDir * ForwardLineTraceLength;
+	const FVector leftLineTraceEnd = lineTraceStart + leftWiskerDir * WhiskerLineTraceLength;
 	FHitResult outLeftLineTraceHit;
 	pWorld->LineTraceSingleByChannel(outLeftLineTraceHit, lineTraceStart, leftLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
@@ -68,27 +67,36 @@ void AAgent::Tick(float DeltaTime)
 	
 	// right whisker line trace
 	FVector rightWiskerDir = forwardVector.RotateAngleAxis(WhiskerAngle, FVector::UpVector);
-	const FVector rightLineTraceEnd = lineTraceStart + rightWiskerDir * ForwardLineTraceLength;
+	const FVector rightLineTraceEnd = lineTraceStart + rightWiskerDir * WhiskerLineTraceLength;
 	FHitResult outRightLineTraceHit;
 	pWorld->LineTraceSingleByChannel(outRightLineTraceHit, lineTraceStart, rightLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
 	DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
+	if(outForwardLineTraceHit.bBlockingHit)
+	{
+		float forwardAvoidScalar = 1.0f - outForwardLineTraceHit.Distance / ForwardLineTraceLength;
+		forwardAvoidScalar *= forwardAvoidScalar;
+		mTarInput += outForwardLineTraceHit.Normal * ForwardAvoidInputScalar * forwardAvoidScalar;
+	}
 	if (outLeftLineTraceHit.bBlockingHit)
 	{
-		mTarInput += rightVector * AvoidInputMultiplier * (1.0f - outLeftLineTraceHit.Distance / (leftLineTraceEnd - lineTraceStart).Size());
+		float leftWhiskerAvoidScalar = 1.0f - outLeftLineTraceHit.Distance / WhiskerLineTraceLength;
+		leftWhiskerAvoidScalar *= leftWhiskerAvoidScalar;
+		mTarInput += rightVector * WhiskerAvoidInputScalar * leftWhiskerAvoidScalar;
 	}
 	else if (outRightLineTraceHit.bBlockingHit)
 	{
-		mTarInput += leftVector * AvoidInputMultiplier * (1.0f - outRightLineTraceHit.Distance / (rightLineTraceEnd - lineTraceStart).Size());
+		float rightWhiskerAvoidScalar = 1.0f - outRightLineTraceHit.Distance / WhiskerLineTraceLength;
+		rightWhiskerAvoidScalar *= rightWhiskerAvoidScalar;
+		mTarInput += leftVector * WhiskerAvoidInputScalar * rightWhiskerAvoidScalar;
 	}
 
 	mTarInput.Normalize();
 	mCurInput = FMath::Lerp(mCurInput, mTarInput, DeltaTime * MoveInputLerpScalar);
 	mpCharacterMovementComponent->AddInputVector(mCurInput);
 }
-PRAGMA_ENABLE_OPTIMIZATION
 
 void AAgent::Wander()
 {

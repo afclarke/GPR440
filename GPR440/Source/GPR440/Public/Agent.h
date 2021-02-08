@@ -39,11 +39,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ForwardLineTraceLength = 200.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WhiskerLineTraceLength = 200.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float WhiskerAngle = 30.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MoveInputLerpScalar = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AvoidInputMultiplier = 5.0f;
+	float ForwardAvoidInputScalar = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WhiskerAvoidInputScalar = 20.0f;
 
 	UFUNCTION()
 	void OnCollision(AActor* overlappedActor, AActor* otherActor);
