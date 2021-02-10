@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Flock.h"
 
 // Sets default values
 AAgent::AAgent()
@@ -14,7 +15,7 @@ AAgent::AAgent()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AIControllerClass = AAIC_Agent::StaticClass();
 	ACharacter::bUseControllerRotationYaw = true;
-	
+
 	PrimaryActorTick.bCanEverTick = true;
 
 	mpCharacterMovementComponent = GetCharacterMovement();
@@ -37,11 +38,14 @@ void AAgent::BeginPlay()
 void AAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
+	mpCharacterMovementComponent->AddInputVector(CalcFlockInput());
+	return;
+	
 	mTarInput = FVector::ZeroVector;
 
 	Wander();
-	
+
 	const UWorld* pWorld = GetWorld();
 
 	// Obstacle Avoidance
@@ -49,7 +53,7 @@ void AAgent::Tick(float DeltaTime)
 	const FVector leftVector = forwardVector.RotateAngleAxis(-90, FVector::UpVector);
 	const FVector rightVector = forwardVector.RotateAngleAxis(90, FVector::UpVector);
 	const FVector lineTraceStart = GetActorLocation() + forwardVector * (GetCapsuleComponent()->GetScaledCapsuleRadius() + 0.1f);
-	
+
 	// Forward line trace
 	const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
 	FHitResult outForwardLineTraceHit;
@@ -66,7 +70,7 @@ void AAgent::Tick(float DeltaTime)
 		ECollisionChannel::ECC_Visibility);
 	FColor leftLineTraceDebugColor = outLeftLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
 	DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
-	
+
 	// right whisker line trace
 	FVector rightWiskerDir = forwardVector.RotateAngleAxis(WhiskerAngle, FVector::UpVector);
 	const FVector rightLineTraceEnd = lineTraceStart + rightWiskerDir * WhiskerLineTraceLength;
@@ -76,7 +80,7 @@ void AAgent::Tick(float DeltaTime)
 	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
 	DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
-	if(outForwardLineTraceHit.bBlockingHit)
+	if (outForwardLineTraceHit.bBlockingHit)
 	{
 		float forwardAvoidScalar = 1.0f - outForwardLineTraceHit.Distance / ForwardLineTraceLength;
 		forwardAvoidScalar *= forwardAvoidScalar;
@@ -107,11 +111,11 @@ void AAgent::Wander()
 	float wanderDist = wanderDir.Size();
 
 	// arrived at wander target, get new random target
-	if(wanderDist <= WanderArriveRadius)
+	if (wanderDist <= WanderArriveRadius)
 	{
 		mGoalCount++;
 		OnCollisionEvent(GetFitness());
-		
+
 		mWanderTarget = FMath::VRand() * WanderMovementRadius;
 		mWanderTarget.Z = curLocation.Z;
 		wanderDir = mWanderTarget - curLocation;
@@ -126,7 +130,7 @@ void AAgent::Wander()
 
 void AAgent::Mutate()
 {
-	
+
 }
 
 void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)
@@ -134,3 +138,73 @@ void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)
 	mCollisionCount++;
 	OnCollisionEvent(GetFitness());
 }
+
+PRAGMA_DISABLE_OPTIMIZATION
+FVector AAgent::CalcFlockInput()
+{
+	if(!mpFlock)
+	{
+		return FVector::ZeroVector;
+	}
+
+	FVector flockInput = BoidSeparation() * BoidSeparationWeight
+		+ BoidAlignment() * BoidAlignmentWeight
+		+ BoidCohesion() * BoidCohesionWeight;
+	flockInput.Normalize();
+	return flockInput;
+}
+
+FVector AAgent::BoidSeparation()
+{
+	FVector separation = FVector::ZeroVector;
+	FVector loc = GetActorLocation();
+
+	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(loc, BoidSeparationRadius);
+	for (AAgent* pBoid : neighborhood)
+	{
+		if (pBoid == this) continue;
+
+		separation += loc - pBoid->GetActorLocation();
+	}
+	separation /= neighborhood.Num();
+	separation.Normalize();
+	
+	return separation;
+}
+
+FVector AAgent::BoidAlignment()
+{
+	FVector alignment = FVector::ZeroVector;
+
+	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(GetActorLocation(), BoidAlignmentRadius);
+	for (AAgent* pBoid : neighborhood)
+	{
+		if (pBoid == this) continue;
+
+		alignment += pBoid->GetVelocity().GetSafeNormal();
+	}
+	alignment /= neighborhood.Num();
+	
+	return alignment;
+}
+
+FVector AAgent::BoidCohesion()
+{
+	FVector avgNeighborhoodLoc = FVector::ZeroVector;
+	FVector loc = GetActorLocation();
+
+	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(loc, BoidCohesionRadius);
+	for (AAgent* pBoid : neighborhood)
+	{
+		if (pBoid == this) continue;
+
+		avgNeighborhoodLoc += pBoid->GetActorLocation();
+	}
+	avgNeighborhoodLoc /= neighborhood.Num();
+
+	FVector cohesion = avgNeighborhoodLoc - loc;
+	cohesion.Normalize();
+	
+	return cohesion;
+}
+PRAGMA_ENABLE_OPTIMIZATION

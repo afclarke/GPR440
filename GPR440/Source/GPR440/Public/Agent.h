@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Agent.generated.h"
 
+class AFlock;
+
 UCLASS()
 class GPR440_API AAgent : public ACharacter
 {
@@ -25,7 +27,20 @@ private:
 
 public:
 	void Mutate();
-	int32 GetFitness() { return mGoalCount - mCollisionCount; }
+	FORCEINLINE int32 GetFitness() const { return mGoalCount - mCollisionCount; }
+	FORCEINLINE void SetFlock(AFlock* pFlock) { mpFlock = pFlock; }
+
+protected:
+	UFUNCTION()
+	void OnCollision(AActor* overlappedActor, AActor* otherActor);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCollisionEvent(int32 collisionCount);
+
+private:
+	FVector CalcFlockInput();
+	FVector BoidSeparation();
+	FVector BoidAlignment();
+	FVector BoidCohesion();
 
 protected:
 	// Default Properties
@@ -40,6 +55,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MutationRate = 0.05f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BoidSeparationWeight = 1.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BoidAlignmentWeight = 1.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BoidCohesionWeight = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BoidSeparationRadius = 100.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BoidAlignmentRadius = 100.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BoidCohesionRadius = 100.0f;
+
 	// Instance Properties
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	float ForwardLineTraceLength = 500.0f;
@@ -52,11 +81,6 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	float WhiskerAvoidInputScalar = 50.0f;
 
-	UFUNCTION()
-	void OnCollision(AActor* overlappedActor, AActor* otherActor);
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnCollisionEvent(int32 collisionCount);
-	
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;
 	FVector mWanderTarget;
@@ -67,4 +91,6 @@ private:
 
 	int32 mCollisionCount;
 	int32 mGoalCount;
+
+	AFlock* mpFlock;
 };
