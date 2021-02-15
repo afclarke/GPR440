@@ -27,7 +27,8 @@ private:
 
 public:
 	void Mutate();
-	FORCEINLINE int32 GetFitness() const { return mGoalCount - mCollisionCount; }
+	//FORCEINLINE int32 GetFitness() const { return mGoalCount - mCollisionCount; }
+	FORCEINLINE int32 GetFitness() const { return mCollisionCount; }
 	FORCEINLINE void SetFlock(AFlock* pFlock) { mpFlock = pFlock; }
 
 protected:

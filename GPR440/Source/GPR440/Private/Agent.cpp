@@ -38,13 +38,12 @@ void AAgent::BeginPlay()
 void AAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	mpCharacterMovementComponent->AddInputVector(CalcFlockInput());
-	return;
-	
-	mTarInput = FVector::ZeroVector;
 
-	Wander();
+	mTarInput = FVector::ZeroVector;
+	
+	mTarInput = CalcFlockInput();
+
+	//Wander();
 
 	const UWorld* pWorld = GetWorld();
 
@@ -60,7 +59,7 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	//DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	// left whisker line trace
 	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-WhiskerAngle, FVector::UpVector);
@@ -69,7 +68,7 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outLeftLineTraceHit, lineTraceStart, leftLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor leftLineTraceDebugColor = outLeftLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	//DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	// right whisker line trace
 	FVector rightWiskerDir = forwardVector.RotateAngleAxis(WhiskerAngle, FVector::UpVector);
@@ -78,7 +77,7 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outRightLineTraceHit, lineTraceStart, rightLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	//DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	if (outForwardLineTraceHit.bBlockingHit)
 	{
