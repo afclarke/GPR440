@@ -32,6 +32,8 @@ void AAgent::BeginPlay()
 	mCollisionCount = 0;
 	mGoalCount = -1;
 	OnActorBeginOverlap.AddDynamic(this, &AAgent::OnCollision);
+	mTarInput = FVector::ZeroVector;
+	mCurInput = FMath::VRand();
 }
 
 // Called every frame
@@ -98,8 +100,11 @@ void AAgent::Tick(float DeltaTime)
 		mTarInput += leftVector * WhiskerAvoidInputScalar * rightWhiskerAvoidScalar;
 	}
 
-	mTarInput.Normalize();
-	mCurInput = FMath::Lerp(mCurInput, mTarInput, DeltaTime * MoveInputLerpScalar);
+	if(mTarInput.SizeSquared() > 0)
+	{
+		mTarInput.Normalize();
+		mCurInput = FMath::Lerp(mCurInput, mTarInput, DeltaTime * MoveInputLerpScalar);
+	}
 	mpCharacterMovementComponent->AddInputVector(mCurInput);
 }
 
@@ -159,6 +164,8 @@ FVector AAgent::BoidSeparation()
 	FVector loc = GetActorLocation();
 
 	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(loc, BoidSeparationRadius);
+	if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+
 	for (AAgent* pBoid : neighborhood)
 	{
 		if (pBoid == this) continue;
@@ -176,6 +183,8 @@ FVector AAgent::BoidAlignment()
 	FVector alignment = FVector::ZeroVector;
 
 	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(GetActorLocation(), BoidAlignmentRadius);
+	if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+
 	for (AAgent* pBoid : neighborhood)
 	{
 		if (pBoid == this) continue;
@@ -194,6 +203,8 @@ FVector AAgent::BoidCohesion()
 	FVector loc = GetActorLocation();
 
 	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(loc, BoidCohesionRadius);
+	if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+	
 	for (AAgent* pBoid : neighborhood)
 	{
 		if (pBoid == this) continue;
