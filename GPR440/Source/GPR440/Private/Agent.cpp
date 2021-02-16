@@ -40,7 +40,7 @@ void AAgent::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	mTarInput = FVector::ZeroVector;
-	
+
 	mTarInput = CalcFlockInput();
 
 	//Wander();
@@ -59,7 +59,7 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	//DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	// left whisker line trace
 	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-WhiskerAngle, FVector::UpVector);
@@ -68,7 +68,7 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outLeftLineTraceHit, lineTraceStart, leftLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor leftLineTraceDebugColor = outLeftLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	//DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	// right whisker line trace
 	FVector rightWiskerDir = forwardVector.RotateAngleAxis(WhiskerAngle, FVector::UpVector);
@@ -77,7 +77,7 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outRightLineTraceHit, lineTraceStart, rightLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	//DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
 
 	if (outForwardLineTraceHit.bBlockingHit)
 	{
@@ -141,7 +141,7 @@ void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)
 PRAGMA_DISABLE_OPTIMIZATION
 FVector AAgent::CalcFlockInput()
 {
-	if(!mpFlock)
+	if (!mpFlock)
 	{
 		return FVector::ZeroVector;
 	}
@@ -167,7 +167,7 @@ FVector AAgent::BoidSeparation()
 	}
 	separation /= neighborhood.Num();
 	separation.Normalize();
-	
+
 	return separation;
 }
 
@@ -183,7 +183,8 @@ FVector AAgent::BoidAlignment()
 		alignment += pBoid->GetVelocity().GetSafeNormal();
 	}
 	alignment /= neighborhood.Num();
-	
+	alignment.Normalize();
+
 	return alignment;
 }
 
@@ -203,7 +204,7 @@ FVector AAgent::BoidCohesion()
 
 	FVector cohesion = avgNeighborhoodLoc - loc;
 	cohesion.Normalize();
-	
+
 	return cohesion;
 }
 PRAGMA_ENABLE_OPTIMIZATION
