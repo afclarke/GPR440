@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "QuadTree.h"
 #include "Flock.generated.h"
 
 class AAgent;
@@ -17,22 +18,25 @@ public:
 	AFlock();
 
 protected:
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
+	void Tick(float DeltaTime) override;
 
-	TArray<AAgent*> GetNeighborhood(FVector center, float radius) const;
+	TArray<AActor*> GetNeighborhood(AActor* pActor, float radius) const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AAgent> BoidClassBP;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	float BoidSpawnRadius = 1000.0f;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	int32 FlockSize = 20;
+	UPROPERTY(EditAnywhere)
+	FBox2D QuadTreeRect;
 
 private:
-	UPROPERTY()
 	TArray<AAgent*> mBoids;
+	QuadTree* mpBoidsQuadTree;
 };

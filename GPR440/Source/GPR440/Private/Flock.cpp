@@ -4,16 +4,18 @@
 #include "Flock.h"
 #include "Agent.h"
 
+PRAGMA_DISABLE_OPTIMIZATION
 AFlock::AFlock()
 {
-	PrimaryActorTick.bCanEverTick = false;
-
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AFlock::BeginPlay()
 {
 	Super::BeginPlay();
 
+	mpBoidsQuadTree = new QuadTree(0, QuadTreeRect);
+	
 	// spawn boids in random locations
 	UWorld* pWorld = GetWorld();
 	for(int32 i = 0; i < FlockSize; i++)
@@ -24,27 +26,44 @@ void AFlock::BeginPlay()
 			FRotator::ZeroRotator);
 		pNewBoid->SetFlock(this);
 		mBoids.Add(pNewBoid);
+		mpBoidsQuadTree->Insert(pNewBoid);
 	}
+}
+
+void AFlock::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	mpBoidsQuadTree->Clear();
+	delete mpBoidsQuadTree;
 }
 
 void AFlock::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
 
-TArray<AAgent*> AFlock::GetNeighborhood(FVector center, float radius) const
-{
-	float sqrRadius = radius * radius;
-	
-	TArray<AAgent*> neighborhood;
-	for (AAgent* pBoid : mBoids)
+	// re-build quadtree
+	mpBoidsQuadTree->Clear();
+	for (AAgent* boid : mBoids)
 	{
-		if((pBoid->GetActorLocation() - center).SizeSquared() <= sqrRadius)
-		{
-			neighborhood.Add(pBoid);
-		}
+		mpBoidsQuadTree->Insert(boid);
 	}
-
-	return neighborhood;
+	// draw quadtree debug
+	mpBoidsQuadTree->Draw(GetWorld());
 }
 
+TArray<AActor*> AFlock::GetNeighborhood(AActor* pActor, float radius) const
+{
+	return mpBoidsQuadTree->QuerySqrRadius(pActor, radius * radius);
+	//float sqrRadius = radius * radius;
+	//
+	//TArray<AAgent*> neighborhood;
+	//for (AAgent* pBoid : mBoids)
+	//{
+	//	if((pBoid->GetActorLocation() - center).SizeSquared() <= sqrRadius)
+	//	{
+	//		neighborhood.Add(pBoid);
+	//	}
+	//}
+
+	//return neighborhood;
+}
+PRAGMA_ENABLE_OPTIMIZATION

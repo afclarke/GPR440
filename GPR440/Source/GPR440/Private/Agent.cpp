@@ -105,7 +105,7 @@ void AAgent::Tick(float DeltaTime)
 		mTarInput.Normalize();
 		mCurInput = FMath::Lerp(mCurInput, mTarInput, DeltaTime * MoveInputLerpScalar);
 	}
-	mpCharacterMovementComponent->AddInputVector(mCurInput);
+	mpCharacterMovementComponent->AddInputVector(mCurInput.GetSafeNormal());
 }
 
 void AAgent::Wander()
@@ -163,12 +163,13 @@ FVector AAgent::BoidSeparation()
 	FVector separation = FVector::ZeroVector;
 	FVector loc = GetActorLocation();
 
-	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(loc, BoidSeparationRadius);
-	if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+	TArray<AActor*> neighborhood = mpFlock->GetNeighborhood(this, BoidSeparationRadius);
+	//if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+	if (neighborhood.Num() <= 0) return FVector::ZeroVector;
 
-	for (AAgent* pBoid : neighborhood)
+	for (AActor* pBoid : neighborhood)
 	{
-		if (pBoid == this) continue;
+		//if (pBoid == this) continue;
 
 		separation += loc - pBoid->GetActorLocation();
 	}
@@ -182,12 +183,13 @@ FVector AAgent::BoidAlignment()
 {
 	FVector alignment = FVector::ZeroVector;
 
-	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(GetActorLocation(), BoidAlignmentRadius);
-	if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+	TArray<AActor*> neighborhood = mpFlock->GetNeighborhood(this, BoidAlignmentRadius);
+	//if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+	if (neighborhood.Num() <= 0) return FVector::ZeroVector;
 
-	for (AAgent* pBoid : neighborhood)
+	for (AActor* pBoid : neighborhood)
 	{
-		if (pBoid == this) continue;
+		//if (pBoid == this) continue;
 
 		alignment += pBoid->GetVelocity().GetSafeNormal();
 	}
@@ -200,20 +202,20 @@ FVector AAgent::BoidAlignment()
 FVector AAgent::BoidCohesion()
 {
 	FVector avgNeighborhoodLoc = FVector::ZeroVector;
-	FVector loc = GetActorLocation();
 
-	TArray<AAgent*> neighborhood = mpFlock->GetNeighborhood(loc, BoidCohesionRadius);
-	if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+	TArray<AActor*> neighborhood = mpFlock->GetNeighborhood(this, BoidCohesionRadius);
+	//if (neighborhood.Num() <= 1) return FVector::ZeroVector;
+	if (neighborhood.Num() <= 0) return FVector::ZeroVector;
 	
-	for (AAgent* pBoid : neighborhood)
+	for (AActor* pBoid : neighborhood)
 	{
-		if (pBoid == this) continue;
+		//if (pBoid == this) continue;
 
 		avgNeighborhoodLoc += pBoid->GetActorLocation();
 	}
 	avgNeighborhoodLoc /= neighborhood.Num();
 
-	FVector cohesion = avgNeighborhoodLoc - loc;
+	FVector cohesion = avgNeighborhoodLoc - GetActorLocation();
 	cohesion.Normalize();
 
 	return cohesion;
