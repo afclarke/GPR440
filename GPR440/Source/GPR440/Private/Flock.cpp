@@ -15,10 +15,10 @@ void AFlock::BeginPlay()
 	Super::BeginPlay();
 
 	mpBoidsQuadTree = new QuadTree(0, QuadTreeRect);
-	
+
 	// spawn boids in random locations
 	UWorld* pWorld = GetWorld();
-	for(int32 i = 0; i < FlockSize; i++)
+	for (int32 i = 0; i < FlockSize; i++)
 	{
 		FVector spawnLoc = FMath::VRand() * BoidSpawnRadius;
 		spawnLoc.Z = 230;
@@ -52,18 +52,20 @@ void AFlock::Tick(float DeltaTime)
 
 TArray<AActor*> AFlock::GetNeighborhood(AActor* pActor, float radius) const
 {
-	return mpBoidsQuadTree->QuerySqrRadius(pActor, radius * radius);
-	//float sqrRadius = radius * radius;
-	//
-	//TArray<AAgent*> neighborhood;
-	//for (AAgent* pBoid : mBoids)
-	//{
-	//	if((pBoid->GetActorLocation() - center).SizeSquared() <= sqrRadius)
-	//	{
-	//		neighborhood.Add(pBoid);
-	//	}
-	//}
+	const float sqrRadius = radius * radius;
 
-	//return neighborhood;
+	return mpBoidsQuadTree->QuerySqrRadius(pActor, sqrRadius);
+
+	TArray<AActor*> neighborhood;
+	for (AActor* pBoid : mBoids)
+	{
+		if (pBoid == pActor) continue;
+		if ((pBoid->GetActorLocation() - pActor->GetActorLocation()).SizeSquared() <= sqrRadius)
+		{
+			neighborhood.Add(pBoid);
+		}
+	}
+
+	return neighborhood;
 }
 PRAGMA_ENABLE_OPTIMIZATION

@@ -23,8 +23,8 @@ private:
 	void Subdivide();
 	
 private:
-	const int32 mCapacity = 3;
-	const int32 mMaxDepth = 4;
+	const int32 mCapacity = 10;
+	const int32 mMaxDepth = 5;
 
 	int32 mDepth;
 	FBox2D mRect;
