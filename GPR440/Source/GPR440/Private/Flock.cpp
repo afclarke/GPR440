@@ -42,16 +42,19 @@ void AFlock::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// re-build quadtree
-	mpBoidsQuadTree->Clear();
-	for (AAgent* boid : mBoids)
+	if(mUseQuadTree)
 	{
-		mpBoidsQuadTree->Insert(boid);
-	}
-	// draw quadtree debug
-	if(mDrawDebug)
-	{
-		mpBoidsQuadTree->Draw(GetWorld());
+		// re-build quadtree
+		mpBoidsQuadTree->Clear();
+		for (AAgent* boid : mBoids)
+		{
+			mpBoidsQuadTree->Insert(boid);
+		}
+		// draw quadtree debug
+		if (mDrawDebug)
+		{
+			mpBoidsQuadTree->Draw(GetWorld());
+		}
 	}
 }
 
@@ -59,7 +62,10 @@ TArray<AActor*> AFlock::GetNeighborhood(AActor* pActor, float radius) const
 {
 	const float sqrRadius = radius * radius;
 
-	return mpBoidsQuadTree->QuerySqrRadius(pActor, sqrRadius);
+	if(mUseQuadTree)
+	{
+		return mpBoidsQuadTree->QuerySqrRadius(pActor, sqrRadius);
+	}
 
 	TArray<AActor*> neighborhood;
 	for (AActor* pBoid : mBoids)
@@ -70,7 +76,6 @@ TArray<AActor*> AFlock::GetNeighborhood(AActor* pActor, float radius) const
 			neighborhood.Add(pBoid);
 		}
 	}
-
 	return neighborhood;
 }
 

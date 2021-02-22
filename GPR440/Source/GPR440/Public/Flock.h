@@ -28,6 +28,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetDrawDebug(bool enabled);
+	UFUNCTION(BlueprintCallable)
+	void SetUseQuadTree(bool enabled) { mUseQuadTree = enabled; }
 	
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -44,4 +46,5 @@ private:
 	QuadTree* mpBoidsQuadTree;
 
 	bool mDrawDebug = true;
+	bool mUseQuadTree = false;
 };
