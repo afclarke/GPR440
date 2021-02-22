@@ -40,10 +40,8 @@ protected:
 	FBox2D QuadTreeRect;
 
 private:
-	UPROPERTY()
 	TArray<AAgent*> mBoids;
-	UPROPERTY()
-	UQuadTree* mpBoidsQuadTree;
+	QuadTree* mpBoidsQuadTree;
 
 	bool mDrawDebug = true;
 };

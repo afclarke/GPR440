@@ -88,7 +88,6 @@ protected:
 	float WhiskerAvoidInputScalar = 50.0f;
 
 private:
-	UPROPERTY()
 	UCharacterMovementComponent* mpCharacterMovementComponent;
 	FVector mWanderTarget;
 	FVector mWanderInput;
@@ -99,7 +98,6 @@ private:
 	int32 mCollisionCount;
 	int32 mGoalCount;
 
-	UPROPERTY()
 	AFlock* mpFlock;
 
 	bool mDrawDebug = true;

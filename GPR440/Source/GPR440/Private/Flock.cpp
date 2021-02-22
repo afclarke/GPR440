@@ -14,8 +14,7 @@ void AFlock::BeginPlay()
 {
 	Super::BeginPlay();
 
-	mpBoidsQuadTree = NewObject<UQuadTree>();
-	mpBoidsQuadTree->Init(0, QuadTreeRect);
+	mpBoidsQuadTree = new QuadTree(0, QuadTreeRect);
 
 	// spawn boids in random locations
 	UWorld* pWorld = GetWorld();
@@ -35,8 +34,7 @@ void AFlock::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 	
-	mpBoidsQuadTree->Clear();
-	// QuadTree UObject will be garbage collected
+	delete mpBoidsQuadTree;
 	mpBoidsQuadTree = nullptr;
 }
 

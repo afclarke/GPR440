@@ -4,32 +4,26 @@
 #include "DrawDebugHelpers.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
-UQuadTree::UQuadTree()
+QuadTree::QuadTree(int32 depth, FBox2D rect)
+	:mDepth(depth), mRect(rect)
 {
-}
-
-
-UQuadTree::~UQuadTree()
-{
-	Clear();
-}
-
-void UQuadTree::Init(int32 depth, FBox2D rect)
-{
-	mDepth = depth;
-	mRect = rect;
-
 	// reserve capacity
 	mpActors.Reserve(mCapacity);
 	mIsLeaf = depth == mMaxDepth;
 }
 
-bool UQuadTree::Insert(AActor* pActor)
+
+QuadTree::~QuadTree()
+{
+	Clear();
+}
+
+bool QuadTree::Insert(AActor* pActor)
 {
 	const FVector2D actorLoc = FVector2D(pActor->GetActorLocation());
 
 	// actor not inside this quad
-	if (!mRect.IsInside(actorLoc))
+	if (!PointIsInsideOrOn(actorLoc))
 	{
 		return false;
 	}
@@ -50,7 +44,7 @@ bool UQuadTree::Insert(AActor* pActor)
 	// try insertion on each sub quad
 	for (int32 i = 0; i < 4; i++)
 	{
-		if(mpNodes[i]->Insert(pActor))
+		if (mpNodes[i]->Insert(pActor))
 		{
 			return true;
 		}
@@ -59,7 +53,7 @@ bool UQuadTree::Insert(AActor* pActor)
 	return false;
 }
 
-TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
+TArray<AActor*> QuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
 {
 	TArray<AActor*> actorsInRadius;
 
@@ -98,7 +92,7 @@ TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
 	return actorsInRadius;
 }
 
-void UQuadTree::Draw(UWorld* pWorld) const
+void QuadTree::Draw(UWorld* pWorld) const
 {
 	DrawDebugBox(pWorld, FVector(mRect.GetCenter(), 200), FVector(mRect.GetExtent(), 1), FColor::Magenta, false, -1, 0, 15);
 	if (mSubdivided)
@@ -110,27 +104,20 @@ void UQuadTree::Draw(UWorld* pWorld) const
 	}
 }
 
-void UQuadTree::Subdivide()
+void QuadTree::Subdivide()
 {
 	FVector2D halfDims = mRect.GetSize() / 2.0f;
 	FVector2D center = mRect.GetCenter();
 
 	// create sub quads
 	const int32 nextLevel = mDepth + 1;
-	mpNodes[0] = NewObject<UQuadTree>();
-	mpNodes[0]->Init(nextLevel, FBox2D(
+	mpNodes[0] = new QuadTree(nextLevel, FBox2D(
 		FVector2D(center.X - halfDims.X, center.Y), FVector2D(center.X, center.Y + halfDims.Y)));
-	
-	mpNodes[1] = NewObject<UQuadTree>();
-	mpNodes[1]->Init(nextLevel, FBox2D(
+	mpNodes[1] = new QuadTree(nextLevel, FBox2D(
 		FVector2D(center.X, center.Y), FVector2D(center.X + halfDims.X, center.Y + halfDims.Y)));
-	
-	mpNodes[2] = NewObject<UQuadTree>();
-	mpNodes[2]->Init(nextLevel, FBox2D(
+	mpNodes[2] = new QuadTree(nextLevel, FBox2D(
 		FVector2D(center.X - halfDims.X, center.Y - halfDims.Y), FVector2D(center.X, center.Y)));
-	
-	mpNodes[3] = NewObject<UQuadTree>();
-	mpNodes[3]->Init(nextLevel, FBox2D(
+	mpNodes[3] = new QuadTree(nextLevel, FBox2D(
 		FVector2D(center.X, center.Y - halfDims.Y), FVector2D(center.X + halfDims.X, center.Y)));
 
 	// distribute actors to sub quads
@@ -147,7 +134,13 @@ void UQuadTree::Subdivide()
 	mSubdivided = true;
 }
 
-void UQuadTree::Clear()
+bool QuadTree::PointIsInsideOrOn(const FVector2D& point) const
+{
+	// FBox2D does not have "IsInside*OrOn*" function
+	return point.X >= mRect.Min.X && point.X <= mRect.Max.X && point.Y >= mRect.Min.Y && point.Y <= mRect.Max.Y;
+}
+
+void QuadTree::Clear()
 {
 	mpActors.Empty();
 
@@ -155,7 +148,7 @@ void UQuadTree::Clear()
 	{
 		for (int32 i = 0; i < 4; i++)
 		{
-			// UObject will be garbage collected
+			delete mpNodes[i];
 			mpNodes[i] = nullptr;
 		}
 		mSubdivided = false;
