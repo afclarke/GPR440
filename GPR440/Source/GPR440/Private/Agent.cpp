@@ -61,7 +61,10 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	if (mDrawDebug)
+	{
+		DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	}
 
 	// left whisker line trace
 	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-WhiskerAngle, FVector::UpVector);
@@ -70,7 +73,10 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outLeftLineTraceHit, lineTraceStart, leftLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor leftLineTraceDebugColor = outLeftLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	if (mDrawDebug)
+	{
+		DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	}
 
 	// right whisker line trace
 	FVector rightWiskerDir = forwardVector.RotateAngleAxis(WhiskerAngle, FVector::UpVector);
@@ -79,7 +85,10 @@ void AAgent::Tick(float DeltaTime)
 	pWorld->LineTraceSingleByChannel(outRightLineTraceHit, lineTraceStart, rightLineTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	if (mDrawDebug)
+	{
+		DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
+	}
 
 	if (outForwardLineTraceHit.bBlockingHit)
 	{
@@ -100,7 +109,7 @@ void AAgent::Tick(float DeltaTime)
 		mTarInput += leftVector * WhiskerAvoidInputScalar * rightWhiskerAvoidScalar;
 	}
 
-	if(mTarInput.SizeSquared() > 0)
+	if (mTarInput.SizeSquared() > 0)
 	{
 		mTarInput.Normalize();
 		mCurInput = FMath::Lerp(mCurInput, mTarInput, DeltaTime * MoveInputLerpScalar);
@@ -135,6 +144,12 @@ void AAgent::Wander()
 void AAgent::Mutate()
 {
 
+}
+
+void AAgent::SetDrawDebug(bool enabled)
+{
+	mDrawDebug = enabled;
+	SetCollisionCountTextEnabled(enabled);
 }
 
 void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)
@@ -206,7 +221,7 @@ FVector AAgent::BoidCohesion()
 	TArray<AActor*> neighborhood = mpFlock->GetNeighborhood(this, BoidCohesionRadius);
 	//if (neighborhood.Num() <= 1) return FVector::ZeroVector;
 	if (neighborhood.Num() <= 0) return FVector::ZeroVector;
-	
+
 	for (AActor* pBoid : neighborhood)
 	{
 		//if (pBoid == this) continue;

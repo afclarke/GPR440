@@ -26,6 +26,9 @@ public:
 
 	TArray<AActor*> GetNeighborhood(AActor* pActor, float radius) const;
 
+	UFUNCTION(BlueprintCallable)
+	void SetDrawDebug(bool enabled);
+	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AAgent> BoidClassBP;
@@ -37,6 +40,10 @@ protected:
 	FBox2D QuadTreeRect;
 
 private:
+	UPROPERTY()
 	TArray<AAgent*> mBoids;
-	QuadTree* mpBoidsQuadTree;
+	UPROPERTY()
+	UQuadTree* mpBoidsQuadTree;
+
+	bool mDrawDebug = true;
 };

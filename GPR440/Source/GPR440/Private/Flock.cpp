@@ -14,7 +14,8 @@ void AFlock::BeginPlay()
 {
 	Super::BeginPlay();
 
-	mpBoidsQuadTree = new QuadTree(0, QuadTreeRect);
+	mpBoidsQuadTree = NewObject<UQuadTree>();
+	mpBoidsQuadTree->Init(0, QuadTreeRect);
 
 	// spawn boids in random locations
 	UWorld* pWorld = GetWorld();
@@ -32,8 +33,11 @@ void AFlock::BeginPlay()
 
 void AFlock::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	Super::EndPlay(EndPlayReason);
+	
 	mpBoidsQuadTree->Clear();
-	delete mpBoidsQuadTree;
+	// QuadTree UObject will be garbage collected
+	mpBoidsQuadTree = nullptr;
 }
 
 void AFlock::Tick(float DeltaTime)
@@ -47,7 +51,10 @@ void AFlock::Tick(float DeltaTime)
 		mpBoidsQuadTree->Insert(boid);
 	}
 	// draw quadtree debug
-	mpBoidsQuadTree->Draw(GetWorld());
+	if(mDrawDebug)
+	{
+		mpBoidsQuadTree->Draw(GetWorld());
+	}
 }
 
 TArray<AActor*> AFlock::GetNeighborhood(AActor* pActor, float radius) const
@@ -68,4 +75,14 @@ TArray<AActor*> AFlock::GetNeighborhood(AActor* pActor, float radius) const
 
 	return neighborhood;
 }
+
+void AFlock::SetDrawDebug(bool enabled)
+{
+	mDrawDebug = enabled;
+	for (AAgent* pBoid : mBoids)
+	{
+		pBoid->SetDrawDebug(enabled);
+	}
+}
+
 PRAGMA_ENABLE_OPTIMIZATION

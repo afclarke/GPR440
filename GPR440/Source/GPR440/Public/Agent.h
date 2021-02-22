@@ -30,12 +30,17 @@ public:
 	//FORCEINLINE int32 GetFitness() const { return mGoalCount - mCollisionCount; }
 	FORCEINLINE int32 GetFitness() const { return mCollisionCount; }
 	FORCEINLINE void SetFlock(AFlock* pFlock) { mpFlock = pFlock; }
+	
+	UFUNCTION(BlueprintCallable)
+	void SetDrawDebug(bool enabled);
 
 protected:
 	UFUNCTION()
 	void OnCollision(AActor* overlappedActor, AActor* otherActor);
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCollisionEvent(int32 collisionCount);
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetCollisionCountTextEnabled(bool enabled);
 
 private:
 	FVector CalcFlockInput();
@@ -83,6 +88,7 @@ protected:
 	float WhiskerAvoidInputScalar = 50.0f;
 
 private:
+	UPROPERTY()
 	UCharacterMovementComponent* mpCharacterMovementComponent;
 	FVector mWanderTarget;
 	FVector mWanderInput;
@@ -93,5 +99,8 @@ private:
 	int32 mCollisionCount;
 	int32 mGoalCount;
 
+	UPROPERTY()
 	AFlock* mpFlock;
+
+	bool mDrawDebug = true;
 };

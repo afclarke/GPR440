@@ -3,17 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "QuadTree.generated.h"
 
 /**
  * 
  */
-class GPR440_API QuadTree
+UCLASS()
+class GPR440_API UQuadTree : public UObject
 {
+	GENERATED_BODY()
+	
 public:
-	QuadTree(int32 depth, FBox2D rect);
-	~QuadTree();
+	UQuadTree();
+	~UQuadTree();
 
 public:
+	void Init(int32 depth, FBox2D rect);
 	bool Insert(AActor* pActor);
 	void Clear();
 	TArray<AActor*> QuerySqrRadius(AActor* pActor, float sqrRadius);
@@ -29,7 +34,7 @@ private:
 	int32 mDepth;
 	FBox2D mRect;
 	TArray<AActor*> mpActors;
-	QuadTree* mpNodes[4];
+	UQuadTree* mpNodes[4];
 	bool mSubdivided = false;
 	bool mIsLeaf = false;
 };

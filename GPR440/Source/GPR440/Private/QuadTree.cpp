@@ -1,24 +1,30 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "QuadTree.h"
 #include "DrawDebugHelpers.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
-QuadTree::QuadTree(int32 depth, FBox2D rect)
-	:mDepth(depth), mRect(rect)
+UQuadTree::UQuadTree()
 {
+}
+
+
+UQuadTree::~UQuadTree()
+{
+	Clear();
+}
+
+void UQuadTree::Init(int32 depth, FBox2D rect)
+{
+	mDepth = depth;
+	mRect = rect;
+
 	// reserve capacity
 	mpActors.Reserve(mCapacity);
 	mIsLeaf = depth == mMaxDepth;
 }
 
-QuadTree::~QuadTree()
-{
-	Clear();
-}
-
-bool QuadTree::Insert(AActor* pActor)
+bool UQuadTree::Insert(AActor* pActor)
 {
 	const FVector2D actorLoc = FVector2D(pActor->GetActorLocation());
 
@@ -53,7 +59,7 @@ bool QuadTree::Insert(AActor* pActor)
 	return false;
 }
 
-TArray<AActor*> QuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
+TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
 {
 	TArray<AActor*> actorsInRadius;
 
@@ -92,7 +98,7 @@ TArray<AActor*> QuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
 	return actorsInRadius;
 }
 
-void QuadTree::Draw(UWorld* pWorld) const
+void UQuadTree::Draw(UWorld* pWorld) const
 {
 	DrawDebugBox(pWorld, FVector(mRect.GetCenter(), 200), FVector(mRect.GetExtent(), 1), FColor::Magenta, false, -1, 0, 15);
 	if (mSubdivided)
@@ -104,20 +110,27 @@ void QuadTree::Draw(UWorld* pWorld) const
 	}
 }
 
-void QuadTree::Subdivide()
+void UQuadTree::Subdivide()
 {
 	FVector2D halfDims = mRect.GetSize() / 2.0f;
 	FVector2D center = mRect.GetCenter();
 
 	// create sub quads
-	int32 nextLevel = mDepth + 1;
-	mpNodes[0] = new QuadTree(nextLevel, FBox2D(
+	const int32 nextLevel = mDepth + 1;
+	mpNodes[0] = NewObject<UQuadTree>();
+	mpNodes[0]->Init(nextLevel, FBox2D(
 		FVector2D(center.X - halfDims.X, center.Y), FVector2D(center.X, center.Y + halfDims.Y)));
-	mpNodes[1] = new QuadTree(nextLevel, FBox2D(
+	
+	mpNodes[1] = NewObject<UQuadTree>();
+	mpNodes[1]->Init(nextLevel, FBox2D(
 		FVector2D(center.X, center.Y), FVector2D(center.X + halfDims.X, center.Y + halfDims.Y)));
-	mpNodes[2] = new QuadTree(nextLevel, FBox2D(
+	
+	mpNodes[2] = NewObject<UQuadTree>();
+	mpNodes[2]->Init(nextLevel, FBox2D(
 		FVector2D(center.X - halfDims.X, center.Y - halfDims.Y), FVector2D(center.X, center.Y)));
-	mpNodes[3] = new QuadTree(nextLevel, FBox2D(
+	
+	mpNodes[3] = NewObject<UQuadTree>();
+	mpNodes[3]->Init(nextLevel, FBox2D(
 		FVector2D(center.X, center.Y - halfDims.Y), FVector2D(center.X + halfDims.X, center.Y)));
 
 	// distribute actors to sub quads
@@ -134,7 +147,7 @@ void QuadTree::Subdivide()
 	mSubdivided = true;
 }
 
-void QuadTree::Clear()
+void UQuadTree::Clear()
 {
 	mpActors.Empty();
 
@@ -142,7 +155,7 @@ void QuadTree::Clear()
 	{
 		for (int32 i = 0; i < 4; i++)
 		{
-			delete mpNodes[i];
+			// UObject will be garbage collected
 			mpNodes[i] = nullptr;
 		}
 		mSubdivided = false;
