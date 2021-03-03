@@ -20,6 +20,8 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	uint32 GetGridIndex(FVector loc);
+
 private:
 	void DrawGrid() const;
 

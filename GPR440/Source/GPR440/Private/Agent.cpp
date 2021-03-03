@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Flock.h"
+#include "FlowField.h"
 
 // Sets default values
 AAgent::AAgent()
@@ -34,6 +35,9 @@ void AAgent::BeginPlay()
 	OnActorBeginOverlap.AddDynamic(this, &AAgent::OnCollision);
 	mTarInput = FVector::ZeroVector;
 	mCurInput = FMath::VRand();
+
+	mpFlowField = Cast<AFlowField>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AFlowField::StaticClass()));
 }
 
 // Called every frame
@@ -41,80 +45,8 @@ void AAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	mTarInput = FVector::ZeroVector;
-
-	mTarInput = CalcFlockInput();
-
-	//Wander();
-
-	const UWorld* pWorld = GetWorld();
-
-	// Obstacle Avoidance
-	const FVector forwardVector = GetActorForwardVector();
-	const FVector leftVector = forwardVector.RotateAngleAxis(-90, FVector::UpVector);
-	const FVector rightVector = forwardVector.RotateAngleAxis(90, FVector::UpVector);
-	const FVector lineTraceStart = GetActorLocation() + forwardVector * (GetCapsuleComponent()->GetScaledCapsuleRadius() + 0.1f);
-
-	// Forward line trace
-	const FVector forwardLineTraceEnd = lineTraceStart + forwardVector * ForwardLineTraceLength;
-	FHitResult outForwardLineTraceHit;
-	pWorld->LineTraceSingleByChannel(outForwardLineTraceHit, lineTraceStart, forwardLineTraceEnd,
-		ECollisionChannel::ECC_Visibility);
-	FColor forwardLineTraceDebugColor = outForwardLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	if (mDrawDebug)
-	{
-		DrawDebugLine(pWorld, lineTraceStart, forwardLineTraceEnd, forwardLineTraceDebugColor, false, -1, 0, DebugLineThickness);
-	}
-
-	// left whisker line trace
-	FVector leftWiskerDir = forwardVector.RotateAngleAxis(-WhiskerAngle, FVector::UpVector);
-	const FVector leftLineTraceEnd = lineTraceStart + leftWiskerDir * WhiskerLineTraceLength;
-	FHitResult outLeftLineTraceHit;
-	pWorld->LineTraceSingleByChannel(outLeftLineTraceHit, lineTraceStart, leftLineTraceEnd,
-		ECollisionChannel::ECC_Visibility);
-	FColor leftLineTraceDebugColor = outLeftLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	if (mDrawDebug)
-	{
-		DrawDebugLine(pWorld, lineTraceStart, leftLineTraceEnd, leftLineTraceDebugColor, false, -1, 0, DebugLineThickness);
-	}
-
-	// right whisker line trace
-	FVector rightWiskerDir = forwardVector.RotateAngleAxis(WhiskerAngle, FVector::UpVector);
-	const FVector rightLineTraceEnd = lineTraceStart + rightWiskerDir * WhiskerLineTraceLength;
-	FHitResult outRightLineTraceHit;
-	pWorld->LineTraceSingleByChannel(outRightLineTraceHit, lineTraceStart, rightLineTraceEnd,
-		ECollisionChannel::ECC_Visibility);
-	FColor rightLineTraceDebugColor = outRightLineTraceHit.bBlockingHit ? FColor::Red : FColor::Blue;
-	if (mDrawDebug)
-	{
-		DrawDebugLine(pWorld, lineTraceStart, rightLineTraceEnd, rightLineTraceDebugColor, false, -1, 0, DebugLineThickness);
-	}
-
-	if (outForwardLineTraceHit.bBlockingHit)
-	{
-		float forwardAvoidScalar = 1.0f - outForwardLineTraceHit.Distance / ForwardLineTraceLength;
-		forwardAvoidScalar *= forwardAvoidScalar;
-		mTarInput += outForwardLineTraceHit.Normal * ForwardAvoidInputScalar * forwardAvoidScalar;
-	}
-	if (outLeftLineTraceHit.bBlockingHit)
-	{
-		float leftWhiskerAvoidScalar = 1.0f - outLeftLineTraceHit.Distance / WhiskerLineTraceLength;
-		leftWhiskerAvoidScalar *= leftWhiskerAvoidScalar;
-		mTarInput += rightVector * WhiskerAvoidInputScalar * leftWhiskerAvoidScalar;
-	}
-	else if (outRightLineTraceHit.bBlockingHit)
-	{
-		float rightWhiskerAvoidScalar = 1.0f - outRightLineTraceHit.Distance / WhiskerLineTraceLength;
-		rightWhiskerAvoidScalar *= rightWhiskerAvoidScalar;
-		mTarInput += leftVector * WhiskerAvoidInputScalar * rightWhiskerAvoidScalar;
-	}
-
-	if (mTarInput.SizeSquared() > 0)
-	{
-		mTarInput.Normalize();
-		mCurInput = FMath::Lerp(mCurInput, mTarInput, DeltaTime * MoveInputLerpScalar);
-	}
-	mpCharacterMovementComponent->AddInputVector(mCurInput.GetSafeNormal());
+	uint32 gridIndex = mpFlowField->GetGridIndex(GetActorLocation());
+	UE_LOG(LogTemp, Warning, TEXT("INDEX: %u"), gridIndex);
 }
 
 void AAgent::Wander()

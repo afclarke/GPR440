@@ -28,6 +28,13 @@ void AFlowField::Tick(float DeltaTime)
 	}
 }
 
+uint32 AFlowField::GetGridIndex(FVector loc)
+{
+	uint32 x = FMath::FloorToInt((loc.X - mGridOrigin.X) / mCellDims.X);
+	uint32 y = FMath::FloorToInt((loc.Y - mGridOrigin.Y) / mCellDims.Y);
+	return x + y * GridColumns;
+}
+
 void AFlowField::DrawGrid() const
 {
 	UWorld* pWorld = GetWorld();

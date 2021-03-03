@@ -7,6 +7,7 @@
 #include "Agent.generated.h"
 
 class AFlock;
+class AFlowField;
 
 UCLASS()
 class GPR440_API AAgent : public ACharacter
@@ -99,6 +100,7 @@ private:
 	int32 mGoalCount;
 
 	AFlock* mpFlock;
+	AFlowField* mpFlowField;
 
 	bool mDrawDebug = true;
 };
