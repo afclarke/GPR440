@@ -46,7 +46,6 @@ void AAgent::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	uint32 gridIndex = mpFlowField->GetGridIndex(GetActorLocation());
-	UE_LOG(LogTemp, Warning, TEXT("INDEX: %u"), gridIndex);
 }
 
 void AAgent::Wander()

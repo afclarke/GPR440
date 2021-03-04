@@ -21,6 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	uint32 GetGridIndex(FVector loc);
+	void BuildCostField();
 
 private:
 	void DrawGrid() const;
@@ -38,10 +39,13 @@ protected:
 	uint32 GridRows;
 	UPROPERTY(EditAnywhere)
 	uint32 GridColumns;
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<ETraceTypeQuery> CostTraceChannel;
 	
 	FVector mGridOrigin;
 	FVector mCellDims;
 	FVector mCellHalfDims;
 	TArray<uint8> mFlowField;
+	TArray<bool> mCostField;
 
 };
