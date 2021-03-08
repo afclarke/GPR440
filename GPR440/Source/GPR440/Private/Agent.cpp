@@ -46,6 +46,7 @@ void AAgent::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	uint32 gridIndex = mpFlowField->GetGridIndex(GetActorLocation());
+	OnCollisionEvent(gridIndex);
 }
 
 void AAgent::Wander()

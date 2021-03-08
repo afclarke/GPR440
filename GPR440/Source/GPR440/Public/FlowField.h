@@ -24,11 +24,15 @@ public:
 	void BuildCostField();
 
 private:
-	void DrawGrid() const;
+	void DrawDebug() const;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool DrawDebug = true;
+	bool DrawGrid = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool DrawCost = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool DrawFlow = false;
 	
 protected:
 	UPROPERTY(EditAnywhere)
@@ -41,11 +45,25 @@ protected:
 	uint32 GridColumns;
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ETraceTypeQuery> CostTraceChannel;
+	UPROPERTY(EditAnywhere)
+	float CostTraceLength;
 	
 	FVector mGridOrigin;
 	FVector mCellDims;
 	FVector mCellHalfDims;
 	TArray<uint8> mFlowField;
-	TArray<bool> mCostField;
+	TArray<uint8> mCostField;
+	
+	const TMap<uint8, FVector> FLOW_DIR
+	{
+		{0, FVector(1, 0, 0)},
+		{1, FVector(1, 1, 0)},
+		{2, FVector(0, 1, 0)},
+		{3, FVector(-1, 1, 0)},
+		{4, FVector(-1, 0, 0)},
+		{5, FVector(-1, -1, 0)},
+		{6, FVector(0, -1, 0)},
+		{7, FVector(1, -1, 0)}
+	};
 
 };

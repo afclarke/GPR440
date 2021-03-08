@@ -27,10 +27,7 @@ void AFlowField::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(DrawDebug)
-	{
-		DrawGrid();
-	}
+	DrawDebug();
 }
 
 uint32 AFlowField::GetGridIndex(FVector loc)
@@ -52,19 +49,40 @@ void AFlowField::BuildCostField()
 				mGridOrigin.Y + mCellHalfDims.Y + mCellDims.Y * j,
 				mGridOrigin.Z);
 			FVector cellTraceEnd = cellCenter;
-			cellTraceEnd.Z = 150;
+			cellTraceEnd.Z -= CostTraceLength;
 
 			FHitResult costBoxTraceHitResult;
 			bool hit = UKismetSystemLibrary::BoxTraceSingle(pWorld, cellCenter, cellTraceEnd, mCellHalfDims,
 				FRotator::ZeroRotator, CostTraceChannel, false, TArray<AActor*>(),
-				EDrawDebugTrace::Type::ForDuration, costBoxTraceHitResult, true);
+				EDrawDebugTrace::Type::None, costBoxTraceHitResult, true);
 
-			mCostField[i + j * GridColumns] = hit;
+			uint8 cost = 1;
+			if(hit)
+			{
+				AActor* hitActor = costBoxTraceHitResult.GetActor();
+				// blocker
+				if (hitActor->ActorHasTag("CostFieldBlocker"))
+				{
+					cost = 255;
+				}
+				// goal
+				else if(hitActor->ActorHasTag("CostFieldGoal"))
+				{
+					cost = 0;
+				}
+				else
+				{
+					// cost is inverse distance of trace result (1-254)
+					cost = 253 * (CostTraceLength - costBoxTraceHitResult.Distance) / CostTraceLength + 1;
+				}
+			}
+			
+			mCostField[i + j * GridColumns] = cost;
 		}
 	}
 }
 
-void AFlowField::DrawGrid() const
+void AFlowField::DrawDebug() const
 {
 	UWorld* pWorld = GetWorld();
 	for(uint32 i = 0; i < GridRows; i++)
@@ -75,10 +93,25 @@ void AFlowField::DrawGrid() const
 				mGridOrigin.X + mCellHalfDims.X + mCellDims.X * i,
 				mGridOrigin.Y + mCellHalfDims.Y + mCellDims.Y * j,
 				mGridOrigin.Z);
-			
-			DrawDebugBox(pWorld, cellCenter, mCellHalfDims, mCostField[i + j * GridColumns] ? FColor::Red : FColor::Blue,
-				false, -1, 0, 20);
+
+			if(DrawGrid)
+			{
+				// draw grid slightly higher than others
+				FVector gridCellLoc = cellCenter;
+				gridCellLoc.Z += 1.0f;
+				DrawDebugBox(pWorld, gridCellLoc, mCellHalfDims, FColor::Yellow,
+					false, -1, 0, 20);
+			}
+			if(DrawCost)
+			{
+				const float cost = mCostField[i + j * GridColumns];
+				DrawDebugSolidBox(pWorld, FBox(cellCenter - mCellHalfDims, cellCenter + mCellHalfDims),
+					FColor(cost, 255.0f - cost, 0, 255));
+			}
+			if(DrawFlow)
+			{
+				
+			}
 		}
 	}
 }
-
