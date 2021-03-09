@@ -34,7 +34,8 @@ void AAgent::BeginPlay()
 	mGoalCount = -1;
 	OnActorBeginOverlap.AddDynamic(this, &AAgent::OnCollision);
 	mTarInput = FVector::ZeroVector;
-	mCurInput = FMath::VRand();
+	//mCurInput = FMath::VRand();
+	mCurInput = FVector::ZeroVector;
 
 	mpFlowField = Cast<AFlowField>(
 		UGameplayStatics::GetActorOfClass(GetWorld(), AFlowField::StaticClass()));
@@ -47,6 +48,8 @@ void AAgent::Tick(float DeltaTime)
 
 	uint32 gridIndex = mpFlowField->GetGridIndex(GetActorLocation());
 	OnCollisionEvent(gridIndex);
+
+	AddMovementInput(mpFlowField->GetFlow(gridIndex));
 }
 
 void AAgent::Wander()
