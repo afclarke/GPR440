@@ -268,7 +268,7 @@ void AFlowField::DrawDebug() const
 			}
 			if (DrawFlow)
 			{
-				DrawDebugLine(pWorld, cellCenter, cellCenter + GetFlow(cellIndex) * 100.0f,
+				DrawDebugLine(pWorld, cellCenter, cellCenter + GetFlow(cellIndex) * mCellHalfDims.X,
 					FColor::Cyan, false, -1, 0, 15);
 			}
 		}
