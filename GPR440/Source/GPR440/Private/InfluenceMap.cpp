@@ -145,10 +145,17 @@ void AInfluenceMap::DrawGrid() const
 	{
 		for (uint32 j = 0; j < GridColumns; j++)
 		{
-			FVector cellCenter = GetWorldLocFromCoords(FVector2D(i, j));
+			FVector2D coords = FVector2D(i, j);
+			FVector cellCenter = GetWorldLocFromCoords(coords);
+			uint32 cellIndex = GetGridIndexFromCoords(coords);
+			uint8 cellValue = mValues[cellIndex];
 
 			DrawDebugBox(pWorld, cellCenter, mCellHalfDims, FColor::Yellow,
 				false, -1, 0, 20);
+			cellCenter.Z += 1;
+			FColor valueColor = FColor(DebugValueColor.R, DebugValueColor.G, DebugValueColor.B, cellValue);
+			DrawDebugSolidBox(pWorld, FBox(cellCenter - mCellHalfDims, cellCenter + mCellHalfDims),
+				valueColor);
 		}
 	}
 }

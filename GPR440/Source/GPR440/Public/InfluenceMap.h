@@ -6,6 +6,12 @@
 #include "GameFramework/Actor.h"
 #include "InfluenceMap.generated.h"
 
+UENUM()
+enum class EStampFunc : uint8
+{
+	LINEAR
+};
+
 UCLASS(Abstract)
 class GPR440_API AInfluenceMap : public AActor
 {
@@ -31,6 +37,9 @@ public:
 	void ScaleMap(float scalar, bool updateHighestPoint = false);
 	void InvertMap(bool updateHighestPoint = false);
 
+	static void GenerateStamp(EStampFunc funcType, uint32 radius);
+	void PlaceStamp(EStampFunc funcType, uint32 radius, FVector2D centerCoords);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -49,6 +58,8 @@ public:
 	uint32 GridColumns;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool DebugDrawGrid = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FColor DebugValueColor = FColor::Green;
 	
 	UPROPERTY(VisibleAnywhere)
 	FVector mGridOrigin;
@@ -61,4 +72,6 @@ private:
 	TArray<uint8> mValues;
 	uint32 mHighestCellIndex = -1;
 
+	// maps from func type -> radius -> stamp values
+	static TMap<EStampFunc, TMap<uint32, TArray<uint8>>> mStamps;
 };
