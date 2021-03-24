@@ -48,6 +48,7 @@ public:
 	void MultiplyMap(const AInfluenceMap& map, float scalar = 1.0f, bool updateHighestPoint = false);
 	void ScaleMap(float scalar, bool updateHighestPoint = false);
 	void InvertMap(bool updateHighestPoint = false);
+	void ClearMap();
 
 	static int32 GenerateStamp(EStampFunc funcType, uint32 radius);
 	void ApplyStamp(int32 stampIndex, FVector2D centerCoords);
@@ -85,6 +86,7 @@ public:
 private:
 	TArray<float> mValues;
 	uint32 mHighestCellIndex = -1;
+	bool mDirty = false;
 
 	static TArray<FStamp> mStamps;
 };

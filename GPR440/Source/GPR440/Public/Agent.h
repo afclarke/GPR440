@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InfluenceMap.h"
 #include "Agent.generated.h"
 
 class AFlock;
@@ -88,6 +89,9 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	float WhiskerAvoidInputScalar = 50.0f;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	AInfluenceMap* ProximityInfluenceMap;
+
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;
 	FVector mWanderTarget;
@@ -101,6 +105,8 @@ private:
 
 	AFlock* mpFlock;
 	AFlowField* mpFlowField;
+
+	int32 proximityStampIndex;
 
 	bool mDrawDebug = true;
 };

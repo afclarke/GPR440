@@ -37,8 +37,7 @@ void AAgent::BeginPlay()
 	//mCurInput = FMath::VRand();
 	mCurInput = FVector::ZeroVector;
 
-	mpFlowField = Cast<AFlowField>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AFlowField::StaticClass()));
+	proximityStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, 5);
 }
 
 // Called every frame
@@ -46,10 +45,9 @@ void AAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	uint32 gridIndex = mpFlowField->GetGridIndex(GetActorLocation());
-	OnCollisionEvent(gridIndex);
-
-	AddMovementInput(mpFlowField->GetFlow(gridIndex));
+	ProximityInfluenceMap->ClearMap();
+	FVector2D locationCoords = ProximityInfluenceMap->GetGridCoordsFromWorldLoc(GetActorLocation());
+	ProximityInfluenceMap->ApplyStamp(proximityStampIndex, locationCoords);
 }
 
 void AAgent::Wander()
