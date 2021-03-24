@@ -4,6 +4,9 @@
 #include "InfluenceMap.h"
 #include "DrawDebugHelpers.h"
 
+PRAGMA_DISABLE_OPTIMIZATION
+TArray<FStamp> AInfluenceMap::mStamps;
+
 AInfluenceMap::AInfluenceMap()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -12,7 +15,7 @@ AInfluenceMap::AInfluenceMap()
 uint32 AInfluenceMap::GetGridIndexFromCoords(FVector2D coords) const
 {
 	CheckCoordsValid(coords);
-	return coords.X + coords.Y * GridColumns;
+	return coords.X + coords.Y * GridRows;
 }
 
 FVector2D AInfluenceMap::GetGridCoordsFromWorldLoc(FVector loc) const
@@ -38,17 +41,22 @@ FVector AInfluenceMap::GetWorldLocFromCoords(FVector2D coords) const
 		mGridOrigin.Z);
 }
 
-void AInfluenceMap::CheckCoordsValid(FVector2D coords) const
+bool AInfluenceMap::GetCoordsValid(FVector2D coords) const
 {
-	check(coords.X < 0 || coords.X >= GridRows || coords.Y < 0 || coords.Y >= GridColumns)
+	return !(coords.X < 0 || coords.X >= GridRows || coords.Y < 0 || coords.Y >= GridColumns);
 }
 
-uint8 AInfluenceMap::GetValueAtIndex(uint32 index) const
+void AInfluenceMap::CheckCoordsValid(FVector2D coords) const
+{
+	check(GetCoordsValid(coords));
+}
+
+float AInfluenceMap::GetValueAtIndex(uint32 index) const
 {
 	return mValues[index];
 }
 
-uint8 AInfluenceMap::GetValueAtCoords(FVector2D coords) const
+float AInfluenceMap::GetValueAtCoords(FVector2D coords) const
 {
 	CheckCoordsValid(coords);
 	uint32 index = GetGridIndexFromCoords(coords);
@@ -65,7 +73,7 @@ void AInfluenceMap::CheckMapsCompatible(const AInfluenceMap& mapA, const AInflue
 	check(mapA.GridRows == mapB.GridRows && mapA.GridColumns == mapB.GridColumns);
 }
 
-void AInfluenceMap::CheckHighestCell(uint32 i, uint8& highestValue)
+void AInfluenceMap::CheckHighestCell(uint32 i, float& highestValue)
 {
 	// check for highest value cell
 	if (mValues[i] >= highestValue)
@@ -78,13 +86,13 @@ void AInfluenceMap::CheckHighestCell(uint32 i, uint8& highestValue)
 void AInfluenceMap::AddMap(const AInfluenceMap& map, float scalar, bool updateHighestPoint)
 {
 	CheckMapsCompatible(*this, map);
-	uint8 highestValue = -1;
+	float highestValue = -2e32;
 
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
 		mValues[i] += map.mValues[i] * scalar;
 
-		if(updateHighestPoint)
+		if (updateHighestPoint)
 		{
 			CheckHighestCell(i, highestValue);
 		}
@@ -94,7 +102,7 @@ void AInfluenceMap::AddMap(const AInfluenceMap& map, float scalar, bool updateHi
 void AInfluenceMap::MultiplyMap(const AInfluenceMap& map, float scalar, bool updateHighestPoint)
 {
 	CheckMapsCompatible(*this, map);
-	uint8 highestValue = -1;
+	float highestValue = -2e32;
 
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
@@ -109,7 +117,7 @@ void AInfluenceMap::MultiplyMap(const AInfluenceMap& map, float scalar, bool upd
 
 void AInfluenceMap::ScaleMap(float scalar, bool updateHighestPoint)
 {
-	uint8 highestValue = -1;
+	float highestValue = -2e32;
 
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
@@ -125,7 +133,7 @@ void AInfluenceMap::ScaleMap(float scalar, bool updateHighestPoint)
 
 void AInfluenceMap::InvertMap(bool updateHighestPoint)
 {
-	uint8 highestValue = -1;
+	float highestValue = -2e32;
 
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
@@ -135,6 +143,65 @@ void AInfluenceMap::InvertMap(bool updateHighestPoint)
 		{
 			CheckHighestCell(i, highestValue);
 		}
+	}
+}
+
+int32 AInfluenceMap::GenerateStamp(EStampFunc funcType, uint32 radius)
+{
+	FStamp stamp{ funcType, radius, TArray<float>() };
+	stamp.mValues.SetNumZeroed(radius * radius);
+	const uint32 diameter = 2 * radius;
+
+	switch (funcType)
+	{
+	case EStampFunc::LINEAR:
+	{
+		const FVector2D center = FVector2D(radius, radius);
+		for (uint32 i = 0; i < diameter; i++)
+		{
+			for (uint32 j = 0; j < diameter; j++)
+			{
+				const float linearDistToCenter = (FVector2D(i, j) - center).Size();
+				stamp.mValues[i + j * diameter] = linearDistToCenter;
+			}
+		}
+		break;
+	}
+	default:
+	{
+		return -1;
+	}
+	}
+
+	return mStamps.Add(stamp);
+}
+
+void AInfluenceMap::ApplyStamp(int32 stampIndex, FVector2D centerCoords)
+{
+	FStamp stamp = mStamps[stampIndex];
+	const uint32 diameter = 2 * stamp.mRadius;
+
+	switch (stamp.mFuncType)
+	{
+	case EStampFunc::LINEAR:
+	{
+		int32 stampValueIndex = 0;
+		for (int32 i = centerCoords.X - stamp.mRadius; i < centerCoords.X + stamp.mRadius; i++)
+		{
+			for (int32 j = centerCoords.Y - stamp.mRadius; j < centerCoords.Y + stamp.mRadius; j++)
+			{
+				if (GetCoordsValid(FVector2D(i, j)))
+				{
+					mValues[i + j * diameter] = stamp.mValues[stampValueIndex++];
+				}
+			}
+		}
+		break;
+	}
+	default:
+	{
+		break;
+	}
 	}
 }
 
@@ -148,7 +215,7 @@ void AInfluenceMap::DrawGrid() const
 			FVector2D coords = FVector2D(i, j);
 			FVector cellCenter = GetWorldLocFromCoords(coords);
 			uint32 cellIndex = GetGridIndexFromCoords(coords);
-			uint8 cellValue = mValues[cellIndex];
+			float cellValue = mValues[cellIndex];
 
 			DrawDebugBox(pWorld, cellCenter, mCellHalfDims, FColor::Yellow,
 				false, -1, 0, 20);
@@ -179,4 +246,4 @@ void AInfluenceMap::Tick(float DeltaTime)
 		DrawGrid();
 	}
 }
-
+PRAGMA_ENABLE_OPTIMIZATION

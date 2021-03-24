@@ -9,7 +9,18 @@
 UENUM()
 enum class EStampFunc : uint8
 {
-	LINEAR
+	LINEAR,
+	INVERSE_QUADRATIC
+};
+
+USTRUCT()
+struct FStamp
+{
+	GENERATED_BODY()
+	
+	EStampFunc mFuncType;
+	uint32 mRadius;
+	TArray<float> mValues;
 };
 
 UCLASS(Abstract)
@@ -24,21 +35,22 @@ public:
 	FVector2D GetGridCoordsFromWorldLoc(FVector loc) const;
 	uint32 GetGridIndexFromWorldLoc(FVector loc) const;
 	FVector GetWorldLocFromCoords(FVector2D coords) const;
+	bool GetCoordsValid(FVector2D coords) const;
 	void CheckCoordsValid(FVector2D coords) const;
 
-	uint8 GetValueAtIndex(uint32 index) const;
-	uint8 GetValueAtCoords(FVector2D coords) const;
+	float GetValueAtIndex(uint32 index) const;
+	float GetValueAtCoords(FVector2D coords) const;
 	uint32 GetHighestCellIndex() const;
 
 	static void CheckMapsCompatible(const AInfluenceMap& mapA, const AInfluenceMap& mapB);
-	void CheckHighestCell(uint32 i, uint8& highestValue);
+	void CheckHighestCell(uint32 i, float& highestValue);
 	void AddMap(const AInfluenceMap& map, float scalar = 1.0f, bool updateHighestPoint = false);
 	void MultiplyMap(const AInfluenceMap& map, float scalar = 1.0f, bool updateHighestPoint = false);
 	void ScaleMap(float scalar, bool updateHighestPoint = false);
 	void InvertMap(bool updateHighestPoint = false);
 
-	static void GenerateStamp(EStampFunc funcType, uint32 radius);
-	void PlaceStamp(EStampFunc funcType, uint32 radius, FVector2D centerCoords);
+	static int32 GenerateStamp(EStampFunc funcType, uint32 radius);
+	void ApplyStamp(int32 stampIndex, FVector2D centerCoords);
 
 protected:
 	virtual void BeginPlay() override;
@@ -69,9 +81,8 @@ public:
 	FVector mCellHalfDims;
 
 private:
-	TArray<uint8> mValues;
+	TArray<float> mValues;
 	uint32 mHighestCellIndex = -1;
 
-	// maps from func type -> radius -> stamp values
-	static TMap<EStampFunc, TMap<uint32, TArray<uint8>>> mStamps;
+	static TArray<FStamp> mStamps;
 };
