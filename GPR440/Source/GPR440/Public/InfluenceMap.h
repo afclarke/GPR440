@@ -71,6 +71,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool DebugDrawGrid = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool DebugDrawValue = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FColor DebugValueColor = FColor::Green;
 	
 	UPROPERTY(VisibleAnywhere)

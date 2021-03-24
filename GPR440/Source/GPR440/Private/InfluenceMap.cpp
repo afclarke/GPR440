@@ -149,8 +149,8 @@ void AInfluenceMap::InvertMap(bool updateHighestPoint)
 int32 AInfluenceMap::GenerateStamp(EStampFunc funcType, uint32 radius)
 {
 	FStamp stamp{ funcType, radius, TArray<float>() };
-	stamp.mValues.SetNumZeroed(radius * radius);
 	const uint32 diameter = 2 * radius;
+	stamp.mValues.SetNumZeroed(diameter * diameter);
 
 	switch (funcType)
 	{
@@ -161,8 +161,10 @@ int32 AInfluenceMap::GenerateStamp(EStampFunc funcType, uint32 radius)
 		{
 			for (uint32 j = 0; j < diameter; j++)
 			{
-				const float linearDistToCenter = (FVector2D(i, j) - center).Size();
-				stamp.mValues[i + j * diameter] = linearDistToCenter;
+				float linearDistFromCenter = radius - (FVector2D(i, j) - center).Size();
+				linearDistFromCenter = FMath::Max(linearDistFromCenter, 0.0f);
+				linearDistFromCenter /= radius;
+				stamp.mValues[i + j * diameter] = linearDistFromCenter;
 			}
 		}
 		break;
@@ -185,15 +187,13 @@ void AInfluenceMap::ApplyStamp(int32 stampIndex, FVector2D centerCoords)
 	{
 	case EStampFunc::LINEAR:
 	{
-		int32 stampValueIndex = 0;
-		for (int32 i = centerCoords.X - stamp.mRadius; i < centerCoords.X + stamp.mRadius; i++)
+		const FVector2D stampBottomLeft = centerCoords - FVector2D(stamp.mRadius, stamp.mRadius);
+		for (int32 i = 0; i < stamp.mValues.Num(); i++)
 		{
-			for (int32 j = centerCoords.Y - stamp.mRadius; j < centerCoords.Y + stamp.mRadius; j++)
+			const FVector2D coords = stampBottomLeft + FVector2D(i % diameter, FMath::FloorToInt(i / diameter));
+			if (GetCoordsValid(coords))
 			{
-				if (GetCoordsValid(FVector2D(i, j)))
-				{
-					mValues[i + j * diameter] = stamp.mValues[stampValueIndex++];
-				}
+				mValues[GetGridIndexFromCoords(coords)] = stamp.mValues[i];
 			}
 		}
 		break;
@@ -217,12 +217,18 @@ void AInfluenceMap::DrawGrid() const
 			uint32 cellIndex = GetGridIndexFromCoords(coords);
 			float cellValue = mValues[cellIndex];
 
-			DrawDebugBox(pWorld, cellCenter, mCellHalfDims, FColor::Yellow,
-				false, -1, 0, 20);
-			cellCenter.Z += 1;
-			FColor valueColor = FColor(DebugValueColor.R, DebugValueColor.G, DebugValueColor.B, cellValue);
-			DrawDebugSolidBox(pWorld, FBox(cellCenter - mCellHalfDims, cellCenter + mCellHalfDims),
-				valueColor);
+			if(DebugDrawGrid)
+			{
+				DrawDebugBox(pWorld, cellCenter, mCellHalfDims, FColor::Yellow,
+					false, -1, 0, 20);
+			}
+			if(DebugDrawValue)
+			{
+				cellCenter.Z += 1;
+				FColor valueColor = FColor(DebugValueColor.R, DebugValueColor.G, DebugValueColor.B, FMath::Abs(cellValue) * 255);
+				DrawDebugSolidBox(pWorld, FBox(cellCenter - mCellHalfDims, cellCenter + mCellHalfDims),
+					valueColor);
+			}
 		}
 	}
 }
@@ -235,15 +241,16 @@ void AInfluenceMap::BeginPlay()
 	mCellDims = FVector(GridWidth / GridRows, GridHeight / GridColumns, 0);
 	mCellHalfDims = mCellDims / 2.0f;
 	mValues.SetNumZeroed(GridRows * GridColumns);
+
+
+	GenerateStamp(EStampFunc::LINEAR, 5);
+	ApplyStamp(0, FVector2D(12, 12));
 }
 
 void AInfluenceMap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (DebugDrawGrid)
-	{
-		DrawGrid();
-	}
+	DrawGrid();
 }
 PRAGMA_ENABLE_OPTIMIZATION
