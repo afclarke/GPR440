@@ -36,6 +36,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetDrawDebug(bool enabled);
 
+	void WriteToInfluenceMaps();
+	void ReadInfluenceMaps();
+
 protected:
 	UFUNCTION()
 	void OnCollision(AActor* overlappedActor, AActor* otherActor);
@@ -90,7 +93,17 @@ protected:
 	float WhiskerAvoidInputScalar = 50.0f;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	int32 ProximityRadius;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AInfluenceMap* ProximityInfluenceMap;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	AInfluenceMap* EnemyProximityInfluenceMap;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	int32 ThreatRadius;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	AInfluenceMap* ThreatInfluenceMap;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	AInfluenceMap* EnemyThreatInfluenceMap;
 
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;
@@ -106,7 +119,10 @@ private:
 	AFlock* mpFlock;
 	AFlowField* mpFlowField;
 
-	int32 proximityStampIndex;
+	class AInfluenceMapManager* mpInfluenceMapManager;
+	int32 mProximityStampIndex;
+	int32 mThreatStampIndex;
+	AInfluenceMap* mpWorkingMap;
 
 	bool mDrawDebug = true;
 };

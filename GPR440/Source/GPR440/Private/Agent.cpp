@@ -9,6 +9,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Flock.h"
 #include "FlowField.h"
+#include "InfluenceMapManager.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AAgent::AAgent()
@@ -23,11 +25,14 @@ AAgent::AAgent()
 	mpCharacterMovementComponent->bOrientRotationToMovement = true;
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
 // Called when the game starts or when spawned
 void AAgent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	mpInfluenceMapManager = Cast<AInfluenceMapManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AInfluenceMapManager::StaticClass()));
 	mWanderTarget = GetActorLocation();
 
 	mCollisionCount = 0;
@@ -37,17 +42,22 @@ void AAgent::BeginPlay()
 	//mCurInput = FMath::VRand();
 	mCurInput = FVector::ZeroVector;
 
-	proximityStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, 5);
+	
+	mpInfluenceMapManager->RegisterAgent(this);
+	
+	mProximityStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, uint32(ProximityRadius));
+	mThreatStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, uint32(ThreatRadius));
+
+	mpWorkingMap = GetWorld()->SpawnActor<AInfluenceMap>();
+	mpWorkingMap->ConstuctFrom(*ProximityInfluenceMap);
+	mpInfluenceMapManager->RegisterMap(mpWorkingMap);
 }
+PRAGMA_ENABLE_OPTIMIZATION
 
 // Called every frame
 void AAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	ProximityInfluenceMap->ClearMap();
-	FVector2D locationCoords = ProximityInfluenceMap->GetGridCoordsFromWorldLoc(GetActorLocation());
-	ProximityInfluenceMap->ApplyStamp(proximityStampIndex, locationCoords);
 }
 
 void AAgent::Wander()
@@ -83,6 +93,23 @@ void AAgent::SetDrawDebug(bool enabled)
 {
 	mDrawDebug = enabled;
 	SetCollisionCountTextEnabled(enabled);
+}
+
+void AAgent::WriteToInfluenceMaps()
+{
+	FVector2D locationCoords = ProximityInfluenceMap->GetGridCoordsFromWorldLoc(GetActorLocation());
+	ProximityInfluenceMap->ApplyStamp(mProximityStampIndex, locationCoords);
+	ThreatInfluenceMap->ApplyStamp(mThreatStampIndex, locationCoords);
+}
+
+void AAgent::ReadInfluenceMaps()
+{
+	//mpWorkingMap->ApplyStamp(mProximityStampIndex, locationCoords, -5);
+	mpWorkingMap->AddMap(*ProximityInfluenceMap, -5, false);
+	mpWorkingMap->AddMap(*EnemyProximityInfluenceMap, 1, true);
+	FVector moveVector = (mpWorkingMap->GetWorldLocFromIndex(mpWorkingMap->GetHighestCellIndex()) - GetActorLocation());
+	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + moveVector, FColor::Green, false, -1, 0, 15);
+	AddMovementInput(moveVector.GetSafeNormal());
 }
 
 void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)
