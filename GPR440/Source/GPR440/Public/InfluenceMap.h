@@ -31,6 +31,8 @@ class GPR440_API AInfluenceMap : public AActor
 public:	
 	AInfluenceMap();
 
+	void Construct(AInfluenceMap* const parentMap, FVector2D gridOriginCoords, uint32 gridRows, uint32 gridColumns);
+	
 	uint32 GetGridIndexFromCoords(FVector2D coords) const;
 	FVector2D GetGridCoordsFromWorldLoc(FVector loc) const;
 	uint32 GetGridIndexFromWorldLoc(FVector loc) const;
@@ -41,22 +43,22 @@ public:
 	void CheckCoordsValid(FVector2D coords) const;
 	void CheckIndexValid(uint32 index) const;
 
+	void SetCenterCoords(FVector2D centerCoords);
+	void SetOriginCoords(FVector2D originCoords);
+
 	float GetValueAtIndex(uint32 index) const;
 	float GetValueAtCoords(FVector2D coords) const;
-	uint32 GetHighestCellIndex() const;
 
 	static void CheckMapsCompatible(const AInfluenceMap& mapA, const AInfluenceMap& mapB);
-	void CheckHighestCell(uint32 i);
-	void AddMap(const AInfluenceMap& map, float scalar = 1.0f, bool updateHighestPoint = false);
-	void MultiplyMap(const AInfluenceMap& map, float scalar = 1.0f, bool updateHighestPoint = false);
-	void ScaleMap(float scalar, bool updateHighestPoint = false);
+	int32 CalcHighestCellIndex();
+	void AddMap(const AInfluenceMap& map, float scalar = 1.0f);
+	void MultiplyMap(const AInfluenceMap& map, float scalar = 1.0f);
+	void ScaleMap(float scalar);
 	void InvertMap(bool updateHighestPoint = false);
 	void ClearMap();
-	// copy over influence map properties & dimensions from other, without values
-	void ConstuctFrom(const AInfluenceMap& other);
 
 	static int32 GenerateStamp(EStampFunc funcType, uint32 radius);
-	void ApplyStamp(int32 stampIndex, FVector2D centerCoords, float scalar = 1);
+	void ApplyStamp(int32 stampIndex, FVector2D centerCoords, float scalar = 1, bool multiply = false);
 
 protected:
 	virtual void BeginPlay() override;
@@ -84,18 +86,19 @@ public:
 	FColor DebugValueColorNeg = FColor::Magenta;
 	
 	UPROPERTY(VisibleAnywhere)
-	FVector mGridOrigin;
+	FVector mGridOriginWorld;
+	UPROPERTY(VisibleAnywhere)
+	FVector2D mGridOriginCoords;
 	UPROPERTY(VisibleAnywhere)
 	FVector mCellDims;
 	UPROPERTY(VisibleAnywhere)
 	FVector mCellHalfDims;
 
 private:
+	AInfluenceMap* mpParentMap;
 	class AInfluenceMapManager* mpInfluenceMapManager;
 	
 	TArray<float> mValues;
-	uint32 mHighestCellIndex = -1;
-	float mHighestCellValue = -2e32;
 
 	static TArray<FStamp> mStamps;
 };

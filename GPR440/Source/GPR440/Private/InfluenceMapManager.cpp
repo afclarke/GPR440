@@ -33,7 +33,7 @@ void AInfluenceMapManager::Tick(float DeltaTime)
 	}
 	for (AAgent* agent : mAgents)
 	{
-		agent->WriteToInfluenceMaps();
+		agent->WriteToSahredInfluenceMaps();
 	}
 	for (AAgent* agent : mAgents)
 	{

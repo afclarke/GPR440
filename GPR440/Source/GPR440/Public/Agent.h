@@ -36,7 +36,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetDrawDebug(bool enabled);
 
-	void WriteToInfluenceMaps();
+	void WriteToSahredInfluenceMaps();
 	void ReadInfluenceMaps();
 
 protected:
@@ -104,6 +104,8 @@ protected:
 	AInfluenceMap* ThreatInfluenceMap;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AInfluenceMap* EnemyThreatInfluenceMap;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	bool Chaser;
 
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;

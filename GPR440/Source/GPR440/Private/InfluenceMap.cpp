@@ -14,6 +14,24 @@ AInfluenceMap::AInfluenceMap()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void AInfluenceMap::Construct(AInfluenceMap* const parentMap, FVector2D gridOriginCoords, uint32 gridRows, uint32 gridColumns)
+{
+	mpParentMap = parentMap;
+	mpInfluenceMapManager = mpParentMap->mpInfluenceMapManager;
+	mCellDims = mpParentMap->mCellDims;
+	mCellHalfDims = mpParentMap->mCellHalfDims;
+	GridRows = gridRows;
+	GridColumns = gridColumns;
+	GridWidth = mCellDims.X * GridRows;
+	GridHeight = mCellDims.Y * GridColumns;
+
+	SetOriginCoords(gridOriginCoords);
+	
+	mValues.SetNumZeroed(GridRows * GridColumns);
+	SetActorLocation(mGridOriginWorld);
+	mpInfluenceMapManager->RegisterMap(this);
+}
+
 uint32 AInfluenceMap::GetGridIndexFromCoords(FVector2D coords) const
 {
 	CheckCoordsValid(coords);
@@ -22,7 +40,7 @@ uint32 AInfluenceMap::GetGridIndexFromCoords(FVector2D coords) const
 
 FVector2D AInfluenceMap::GetGridCoordsFromWorldLoc(FVector loc) const
 {
-	FVector gridSpaceLoc = loc - mGridOrigin;
+	FVector gridSpaceLoc = loc - mGridOriginWorld;
 	FVector2D gridCoords = FVector2D(gridSpaceLoc.X / GridWidth * GridRows, gridSpaceLoc.Y / GridHeight * GridColumns);
 	gridCoords.X = FMath::FloorToInt(gridCoords.X);
 	gridCoords.Y = FMath::FloorToInt(gridCoords.Y);
@@ -41,7 +59,7 @@ FVector AInfluenceMap::GetWorldLocFromCoords(FVector2D coords) const
 {
 	CheckCoordsValid(coords);
 	FVector2D worldLoc = coords / FVector2D(GridRows, GridColumns) * FVector2D(GridWidth, GridHeight);
-	return mGridOrigin + FVector(worldLoc, 0);
+	return mGridOriginWorld + FVector(worldLoc, 0);
 }
 
 FVector2D AInfluenceMap::GetGridCoordsFromIndex(uint32 index) const
@@ -71,6 +89,18 @@ void AInfluenceMap::CheckIndexValid(uint32 index) const
 	check(index < GridRows* GridColumns);
 }
 
+void AInfluenceMap::SetCenterCoords(FVector2D centerCoords)
+{
+	const FVector2D originCoords = centerCoords - FVector2D(GridRows / 2, GridColumns / 2);
+	SetOriginCoords(originCoords);
+}
+
+void AInfluenceMap::SetOriginCoords(FVector2D originCoords)
+{
+	mGridOriginCoords = originCoords;
+	mGridOriginWorld = mpParentMap->mGridOriginWorld + FVector(mGridOriginCoords, 0) * mCellDims;
+}
+
 float AInfluenceMap::GetValueAtIndex(uint32 index) const
 {
 	return mValues[index];
@@ -83,98 +113,60 @@ float AInfluenceMap::GetValueAtCoords(FVector2D coords) const
 	return GetValueAtIndex(index);
 }
 
-uint32 AInfluenceMap::GetHighestCellIndex() const
-{
-	return mHighestCellIndex;
-}
-
 void AInfluenceMap::CheckMapsCompatible(const AInfluenceMap& mapA, const AInfluenceMap& mapB)
 {
 	check(mapA.GridRows == mapB.GridRows && mapA.GridColumns == mapB.GridColumns);
 }
 
-void AInfluenceMap::CheckHighestCell(uint32 i)
+int32 AInfluenceMap::CalcHighestCellIndex()
 {
-	// check for highest value cell
-	if (mValues[i] >= mHighestCellValue)
+	int32 highestCellIndex = -1;
+	float highestCellValue = -1e32;
+	for (int32 i = 0; i < mValues.Num(); i++)
 	{
-		mHighestCellValue = mValues[i];
-		mHighestCellIndex = i;
+		// TODO: randomize starting point
+		if(mValues[i] > highestCellValue)
+		{
+			highestCellValue = mValues[i];
+			highestCellIndex = i;
+		}
 	}
+	return highestCellIndex;
 }
 
-void AInfluenceMap::AddMap(const AInfluenceMap& map, float scalar, bool updateHighestPoint)
+void AInfluenceMap::AddMap(const AInfluenceMap& map, float scalar)
 {
 	CheckMapsCompatible(*this, map);
-	if (updateHighestPoint)
-	{
-		mHighestCellValue = -2e32;
-	}
 
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
 		mValues[i] += map.mValues[i] * scalar;
-
-		if (updateHighestPoint)
-		{
-			CheckHighestCell(i);
-		}
 	}
 }
 
-void AInfluenceMap::MultiplyMap(const AInfluenceMap& map, float scalar, bool updateHighestPoint)
+void AInfluenceMap::MultiplyMap(const AInfluenceMap& map, float scalar)
 {
 	CheckMapsCompatible(*this, map);
-	if (updateHighestPoint)
-	{
-		mHighestCellValue = -2e32;
-	}
 
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
 		mValues[i] *= map.mValues[i] * scalar;
-
-		if (updateHighestPoint)
-		{
-			CheckHighestCell(i);
-		}
 	}
 }
 
-void AInfluenceMap::ScaleMap(float scalar, bool updateHighestPoint)
+void AInfluenceMap::ScaleMap(float scalar)
 {
-	if (updateHighestPoint)
-	{
-		mHighestCellValue = -2e32;
-	}
-
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
 		mValues[i] *= scalar;
-
-		// TODO: This is only necessary if map values & scalars can be negative
-		if (updateHighestPoint)
-		{
-			CheckHighestCell(i);
-		}
 	}
 }
 
 void AInfluenceMap::InvertMap(bool updateHighestPoint)
 {
-	if (updateHighestPoint)
-	{
-		mHighestCellValue = -2e32;
-	}
-
 	for (int32 i = 0; i < mValues.Num(); i++)
 	{
 		mValues[i] = 1 - mValues[i];
-
-		if (updateHighestPoint)
-		{
-			CheckHighestCell(i);
-		}
 	}
 }
 
@@ -184,20 +176,6 @@ void AInfluenceMap::ClearMap()
 	{
 		mValues[i] = 0;
 	}
-}
-
-void AInfluenceMap::ConstuctFrom(const AInfluenceMap& other)
-{
-	mpInfluenceMapManager = other.mpInfluenceMapManager;
-	GridWidth = other.GridWidth;
-	GridHeight = other.GridHeight;
-	GridRows = other.GridRows;
-	GridColumns = other.GridColumns;
-	mGridOrigin = other.mGridOrigin;
-	mCellDims = other.mCellDims;
-	mCellHalfDims = other.mCellHalfDims;
-	mValues.SetNumZeroed(GridRows * GridColumns);
-	SetActorLocation(mGridOrigin);
 }
 
 int32 AInfluenceMap::GenerateStamp(EStampFunc funcType, uint32 radius)
@@ -232,7 +210,7 @@ int32 AInfluenceMap::GenerateStamp(EStampFunc funcType, uint32 radius)
 	return mStamps.Add(stamp);
 }
 
-void AInfluenceMap::ApplyStamp(int32 stampIndex, FVector2D centerCoords, float scalar)
+void AInfluenceMap::ApplyStamp(int32 stampIndex, FVector2D centerCoords, float scalar, bool multiply)
 {
 	FStamp stamp = mStamps[stampIndex];
 	const uint32 diameter = 2 * stamp.mRadius;
@@ -247,7 +225,14 @@ void AInfluenceMap::ApplyStamp(int32 stampIndex, FVector2D centerCoords, float s
 			const FVector2D coords = stampBottomLeft + FVector2D(i % diameter, FMath::FloorToInt(i / diameter));
 			if (GetCoordsValid(coords))
 			{
-				mValues[GetGridIndexFromCoords(coords)] += stamp.mValues[i] * scalar;
+				if(multiply)
+				{
+					mValues[GetGridIndexFromCoords(coords)] *= stamp.mValues[i] * scalar;
+				}
+				else
+				{
+					mValues[GetGridIndexFromCoords(coords)] += stamp.mValues[i] * scalar;
+				}
 			}
 		}
 		break;
@@ -292,14 +277,17 @@ void AInfluenceMap::BeginPlay()
 {
 	Super::BeginPlay();
 
-	mGridOrigin = GetActorLocation();
-	mCellDims = FVector(GridWidth / GridRows, GridHeight / GridColumns, 0);
-	mCellHalfDims = mCellDims / 2.0f;
-	mValues.SetNumZeroed(GridRows * GridColumns);
+	if(!mpParentMap)
+	{
+		mGridOriginWorld = GetActorLocation();
+		mCellDims = FVector(GridWidth / GridRows, GridHeight / GridColumns, 0);
+		mCellHalfDims = mCellDims / 2.0f;
+		mValues.SetNumZeroed(GridRows * GridColumns);
 
-	mpInfluenceMapManager = Cast<AInfluenceMapManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AInfluenceMapManager::StaticClass()));
-	mpInfluenceMapManager->RegisterMap(this);
+		mpInfluenceMapManager = Cast<AInfluenceMapManager>(
+			UGameplayStatics::GetActorOfClass(GetWorld(), AInfluenceMapManager::StaticClass()));
+		mpInfluenceMapManager->RegisterMap(this);
+	}
 }
 
 void AInfluenceMap::Tick(float DeltaTime)

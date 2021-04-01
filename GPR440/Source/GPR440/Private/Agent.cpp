@@ -48,8 +48,10 @@ void AAgent::BeginPlay()
 	mProximityStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, uint32(ProximityRadius));
 	mThreatStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, uint32(ThreatRadius));
 
+	
 	mpWorkingMap = GetWorld()->SpawnActor<AInfluenceMap>();
-	mpWorkingMap->ConstuctFrom(*ProximityInfluenceMap);
+	mpWorkingMap->Construct(ProximityInfluenceMap, FVector2D(0,0),
+		ProximityRadius * 2, ProximityRadius * 2);
 	mpInfluenceMapManager->RegisterMap(mpWorkingMap);
 }
 PRAGMA_ENABLE_OPTIMIZATION
@@ -95,7 +97,7 @@ void AAgent::SetDrawDebug(bool enabled)
 	SetCollisionCountTextEnabled(enabled);
 }
 
-void AAgent::WriteToInfluenceMaps()
+void AAgent::WriteToSahredInfluenceMaps()
 {
 	FVector2D locationCoords = ProximityInfluenceMap->GetGridCoordsFromWorldLoc(GetActorLocation());
 	ProximityInfluenceMap->ApplyStamp(mProximityStampIndex, locationCoords);
@@ -104,10 +106,9 @@ void AAgent::WriteToInfluenceMaps()
 
 void AAgent::ReadInfluenceMaps()
 {
-	//mpWorkingMap->ApplyStamp(mProximityStampIndex, locationCoords, -5);
-	mpWorkingMap->AddMap(*ProximityInfluenceMap, -5, false);
-	mpWorkingMap->AddMap(*EnemyProximityInfluenceMap, 1, true);
-	FVector moveVector = (mpWorkingMap->GetWorldLocFromIndex(mpWorkingMap->GetHighestCellIndex()) - GetActorLocation());
+	FVector2D locationCoords = ProximityInfluenceMap->GetGridCoordsFromWorldLoc(GetActorLocation());
+	mpWorkingMap->SetCenterCoords(locationCoords);
+	FVector moveVector;
 	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + moveVector, FColor::Green, false, -1, 0, 15);
 	AddMovementInput(moveVector.GetSafeNormal());
 }
