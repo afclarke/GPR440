@@ -42,16 +42,15 @@ void AAgent::BeginPlay()
 	//mCurInput = FMath::VRand();
 	mCurInput = FVector::ZeroVector;
 
-	
+
 	mpInfluenceMapManager->RegisterAgent(this);
-	
+
 	mProximityStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, uint32(ProximityRadius));
 	mThreatStampIndex = AInfluenceMap::GenerateStamp(EStampFunc::LINEAR, uint32(ThreatRadius));
 
-	
 	mpWorkingMap = GetWorld()->SpawnActor<AInfluenceMap>();
-	mpWorkingMap->Construct(ProximityInfluenceMap, FVector2D(0,0),
-		ProximityRadius * 2, ProximityRadius * 2);
+	mpWorkingMap->Construct(ProximityInfluenceMap, FVector2D(0, 0),
+		InterestRadius * 2, InterestRadius * 2);
 	mpInfluenceMapManager->RegisterMap(mpWorkingMap);
 }
 PRAGMA_ENABLE_OPTIMIZATION
@@ -60,6 +59,9 @@ PRAGMA_ENABLE_OPTIMIZATION
 void AAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + mMoveVector, FColor::Green, false, -1, 0, 15);
+	AddMovementInput(mMoveVector.GetSafeNormal());
 }
 
 void AAgent::Wander()
@@ -108,9 +110,24 @@ void AAgent::ReadInfluenceMaps()
 {
 	FVector2D locationCoords = ProximityInfluenceMap->GetGridCoordsFromWorldLoc(GetActorLocation());
 	mpWorkingMap->SetCenterCoords(locationCoords);
-	FVector moveVector;
-	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + moveVector, FColor::Green, false, -1, 0, 15);
-	AddMovementInput(moveVector.GetSafeNormal());
+	FVector2D workingMapCenter = FVector2D(InterestRadius, InterestRadius);
+	int32 highestIndex;
+	if (Chaser)
+	{
+		mpWorkingMap->LiftFromParentMap(*EnemyProximityInfluenceMap, 1);
+		mpWorkingMap->ApplyStamp(mThreatStampIndex, workingMapCenter, 5, true);
+		mpWorkingMap->LiftFromParentMap(*ProximityInfluenceMap, -0.5);
+		highestIndex = mpWorkingMap->CalcHighestCellIndex();
+	}
+	else
+	{
+		mpWorkingMap->LiftFromParentMap(*EnemyProximityInfluenceMap, -1);
+		//mpWorkingMap->ApplyStamp(mProximityStampIndex, workingMapCenter, 3, true);
+		highestIndex = mpWorkingMap->CalcHighestCellIndex();
+	}
+
+	FVector highestPoint = mpWorkingMap->GetWorldLocFromIndex(highestIndex);
+	mMoveVector = highestPoint - GetActorLocation();
 }
 
 void AAgent::OnCollision(AActor* overlappedActor, AActor* otherActor)

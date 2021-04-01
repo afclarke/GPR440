@@ -51,7 +51,8 @@ public:
 
 	static void CheckMapsCompatible(const AInfluenceMap& mapA, const AInfluenceMap& mapB);
 	int32 CalcHighestCellIndex();
-	void AddMap(const AInfluenceMap& map, float scalar = 1.0f);
+	TArray<int32> CalcHighestCellsIndicies(int32 numHighestCells);
+	void LiftFromParentMap(const AInfluenceMap& map, float scalar = 1.0f);
 	void MultiplyMap(const AInfluenceMap& map, float scalar = 1.0f);
 	void ScaleMap(float scalar);
 	void InvertMap(bool updateHighestPoint = false);

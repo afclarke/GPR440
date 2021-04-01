@@ -27,6 +27,17 @@ void AInfluenceMapManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	mThinkCycleTimer -= DeltaTime;
+	if (mThinkCycleTimer > 0)
+	{
+		return;
+	}
+	else
+	{
+		mThinkCycleTimer = THINK_CYCLE_LENGTH_SECONDS;
+	}
+	
+
 	for (AInfluenceMap* map : mInfluenceMaps)
 	{
 		map->ClearMap();

@@ -106,6 +106,8 @@ protected:
 	AInfluenceMap* EnemyThreatInfluenceMap;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	bool Chaser;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	int32 InterestRadius;
 
 private:
 	UCharacterMovementComponent* mpCharacterMovementComponent;
@@ -124,7 +126,10 @@ private:
 	class AInfluenceMapManager* mpInfluenceMapManager;
 	int32 mProximityStampIndex;
 	int32 mThreatStampIndex;
+	UPROPERTY(VisibleAnywhere)
 	AInfluenceMap* mpWorkingMap;
 
+	FVector mMoveVector;
+	
 	bool mDrawDebug = true;
 };

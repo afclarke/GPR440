@@ -122,25 +122,76 @@ int32 AInfluenceMap::CalcHighestCellIndex()
 {
 	int32 highestCellIndex = -1;
 	float highestCellValue = -1e32;
-	for (int32 i = 0; i < mValues.Num(); i++)
+
+	// start search from random cell in grid
+	const int32 beginSearchIndex = FMath::RandRange(0, mValues.Num() - 2);
+	int32 i = beginSearchIndex + 1;
+	while(i != beginSearchIndex)
 	{
-		// TODO: randomize starting point
-		if(mValues[i] > highestCellValue)
+		if (mValues[i] > highestCellValue)
 		{
 			highestCellValue = mValues[i];
 			highestCellIndex = i;
+		}
+
+		// loop i;
+		if(++i >= mValues.Num())
+		{
+			i = 0;
 		}
 	}
 	return highestCellIndex;
 }
 
-void AInfluenceMap::AddMap(const AInfluenceMap& map, float scalar)
+TArray<int32> AInfluenceMap::CalcHighestCellsIndicies(int32 numHighestCells)
 {
-	CheckMapsCompatible(*this, map);
-
-	for (int32 i = 0; i < mValues.Num(); i++)
+	TArray<int32> highestCellsIndices;
+	TArray<float> highestCellsValues;
+	for(int32 i = 0; i < numHighestCells; i++)
 	{
-		mValues[i] += map.mValues[i] * scalar;
+		highestCellsIndices.Add(-1);
+		highestCellsValues.Add(-1e32);
+	}
+
+	// start search from random cell in grid
+	const int32 beginSearchIndex = FMath::RandRange(0, mValues.Num() - 2);
+	int32 i = beginSearchIndex + 1;
+	while (i != beginSearchIndex)
+	{
+		for(int32 j = 0; j < numHighestCells; j++)
+		{
+			if (mValues[i] > highestCellsValues[j])
+			{
+				highestCellsValues[j] = mValues[i];
+				highestCellsIndices[j] = i;
+				break;
+			}
+		}
+
+
+		// loop i;
+		if (++i >= mValues.Num())
+		{
+			i = 0;
+		}
+	}
+	return highestCellsIndices;
+}
+
+void AInfluenceMap::LiftFromParentMap(const AInfluenceMap& map, float scalar)
+{
+	for(uint32 x = 0; x < GridRows; x++)
+	{
+		for(uint32 y = 0; y < GridColumns; y++)
+		{
+			FVector2D toCoords = FVector2D(x, y);
+			int32 toIndex = GetGridIndexFromCoords(toCoords);
+			FVector2D fromCoords = mGridOriginCoords + toCoords;
+			if(map.GetCoordsValid(fromCoords))
+			{
+				mValues[toIndex] += map.GetValueAtCoords(fromCoords) * scalar;
+			}
+		}
 	}
 }
 

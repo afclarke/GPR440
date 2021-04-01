@@ -29,4 +29,7 @@ private:
 	TArray<AInfluenceMap*> mInfluenceMaps;
 	TArray<AAgent*> mAgents;
 
+	const float THINK_CYCLE_LENGTH_SECONDS = 0.2f;
+	float mThinkCycleTimer = 0;
+
 };
