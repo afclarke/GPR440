@@ -10,6 +10,8 @@
 class AFlock;
 class AFlowField;
 
+//DECLARE_DELEGATE(FActDelegate)
+
 UCLASS()
 class GPR440_API AAgent : public ACharacter
 {
