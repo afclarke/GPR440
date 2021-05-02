@@ -43,7 +43,7 @@ protected:
 
 private:
 	TArray<AAgent*> mBoids;
-	QuadTree* mpBoidsQuadTree;
+	UQuadTree* mpBoidsQuadTree;
 
 	bool mDrawDebug = true;
 	bool mUseQuadTree = false;

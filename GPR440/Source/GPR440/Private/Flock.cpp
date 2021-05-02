@@ -14,7 +14,8 @@ void AFlock::BeginPlay()
 {
 	Super::BeginPlay();
 
-	mpBoidsQuadTree = new QuadTree(0, QuadTreeRect);
+	mpBoidsQuadTree = NewObject<UQuadTree>();
+	mpBoidsQuadTree->Init(0, QuadTreeRect);
 
 	// spawn boids in random locations
 	UWorld* pWorld = GetWorld();
