@@ -3,11 +3,10 @@
 
 #include "UtilAgent.h"
 
+PRAGMA_DISABLE_OPTIMIZATION
 AUtilAgent::AUtilAgent()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	mpUtilDeciderComponent = CreateDefaultSubobject<UUtilDeciderComponent>("Decider");
 }
 
 void AUtilAgent::BeginPlay()
@@ -21,3 +20,4 @@ void AUtilAgent::Tick(float DeltaTime)
 
 	Act(mpUtilDeciderComponent->decide(this));
 }
+PRAGMA_ENABLE_OPTIMIZATION

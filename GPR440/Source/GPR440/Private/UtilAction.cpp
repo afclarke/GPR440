@@ -22,12 +22,12 @@ void UUtilAction::Init()
 	}
 }
 
-Utility UUtilAction::evaluate(AUtilAgent* pAgent)
+Utility UUtilAction::evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode)
 {
 	Utility utility = 1.f;
 	for (int i = 0; i < mConsiderations.Num(); i++)
 	{
-		utility *= mConsiderationObjs[i]->consider(pAgent);
+		utility *= mConsiderationObjs[i]->consider(pAgent, pGameMode);
 	}
 	return utility;
 }

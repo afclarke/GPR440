@@ -2,6 +2,9 @@
 
 
 #include "UtilDeciderComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "UtilGameMode.h"
+
 PRAGMA_DISABLE_OPTIMIZATION
 UUtilDeciderComponent::UUtilDeciderComponent()
 {
@@ -16,6 +19,9 @@ UUtilDeciderComponent::UUtilDeciderComponent()
 
 EUtilActionType UUtilDeciderComponent::decide(AUtilAgent* pAgent)
 {
+	AUtilGameMode* pGameMode = Cast<AUtilGameMode>(
+		UGameplayStatics::GetGameMode(GetWorld()));
+	
 	EUtilActionType decidedAction = EUtilActionType::INVALID;
 	switch (mDecisionMethod)
 	{
@@ -24,7 +30,7 @@ EUtilActionType UUtilDeciderComponent::decide(AUtilAgent* pAgent)
 		Utility greatestUtil = -1;
 		for (UUtilAction* action : mActionObjs)
 		{
-			Utility actionUtil = action->evaluate(pAgent);
+			Utility actionUtil = action->evaluate(pAgent, pGameMode);
 			if(actionUtil >= greatestUtil)
 			{
 				greatestUtil = actionUtil;

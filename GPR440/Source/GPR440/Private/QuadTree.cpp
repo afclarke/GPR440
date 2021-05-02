@@ -63,7 +63,7 @@ bool UQuadTree::Insert(AActor* pActor)
 	return false;
 }
 
-TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
+TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius, FName forTag)
 {
 	TArray<AActor*> actorsInRadius;
 
@@ -80,8 +80,13 @@ TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius)
 	{
 		for (AActor* actor : mpActors)
 		{
-			// do not including self
+			// do not include self
 			if (actor == pActor)
+			{
+				continue;
+			}
+			// not matching tag
+			if(forTag != NAME_None && !actor->ActorHasTag(forTag))
 			{
 				continue;
 			}

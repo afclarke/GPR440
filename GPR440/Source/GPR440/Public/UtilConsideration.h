@@ -7,6 +7,7 @@
 
 #define Utility float
 class AUtilAgent;
+class AUtilGameMode;
 
 /**
  *
@@ -17,16 +18,18 @@ class GPR440_API UUtilConsideration : public UObject
 	GENERATED_BODY()
 
 public:
-	Utility consider(AUtilAgent* pAgent) const;
+	Utility consider(AUtilAgent* pAgent, AUtilGameMode* pGameMode) const;
 
 protected:
 	// perceive normalized knowledge
 	UFUNCTION(BlueprintImplementableEvent)
-	float perceive(AUtilAgent* pAgent) const;
+	float perceive(AUtilAgent* pAgent, AUtilGameMode* pGameMode) const;
 	//PURE_VIRTUAL(UUtilConsideration::consider, return -1;)
 
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UCurveFloat* mCurve;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor mCurveColor = FLinearColor::White;
 
 };

@@ -36,13 +36,13 @@ public:
 	void Init();
 	
 	// normal, multiplicative evaluation of considerations
-	Utility evaluate(AUtilAgent* pAgent);
+	Utility evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode);
 
 public:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EUtilActionType mActionType;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<UUtilConsideration>> mConsiderations;
 
 	// ideally, we'd have void function pointers for the action,
@@ -50,10 +50,9 @@ public:
 	//void(AAgent::* mAct)();
 	//FActDelegate mAct;
 	
-private:
 	// ideally, for efficiency, this would be an array of struct objects,
 	// but USTRUCT polymorphism isn't possible and all Util should be BP-able
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	TArray<UUtilConsideration*> mConsiderationObjs;
 
 };

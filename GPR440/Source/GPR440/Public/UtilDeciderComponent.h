@@ -16,7 +16,7 @@ enum class EUtilDecisionMethod : uint8
 	WEIGHTED_RANDOM
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class GPR440_API UUtilDeciderComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -40,7 +40,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<UUtilAction>> mActions;
 
-private:
-	UPROPERTY()
+protected:
+	UPROPERTY(BlueprintReadOnly)
 	TArray<UUtilAction*> mActionObjs;
 };

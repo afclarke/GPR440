@@ -31,7 +31,7 @@ public:
 	float mHunger;
 	
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UUtilDeciderComponent* mpUtilDeciderComponent;
 
 	UFUNCTION(BlueprintImplementableEvent)
