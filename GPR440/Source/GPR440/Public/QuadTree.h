@@ -27,7 +27,7 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	int32 mCapacity = 10;
+	int32 mCapacity = 3;
 	UPROPERTY(EditDefaultsOnly)
 	int32 mMaxDepth = 5;
 	

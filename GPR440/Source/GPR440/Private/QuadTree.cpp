@@ -8,10 +8,34 @@ bool UQuadTree::Insert(AActor* pActor)
 {
 	const FVector2D actorLoc = FVector2D(pActor->GetActorLocation());
 
-	// actor not inside this quad
+	// actor not inside bounds
 	if (!PointIsInsideOrOn(actorLoc))
 	{
-		return false;
+		// actor not inside root, resize tree
+		if(mDepth == 0)
+		{
+			if(actorLoc.X > mRect.Max.X)
+			{
+				mRect.Max.X = actorLoc.X;
+			}
+			if(actorLoc.Y > mRect.Max.Y)
+			{
+				mRect.Max.Y = actorLoc.Y;
+			}
+			if (actorLoc.X < mRect.Min.X)
+			{
+				mRect.Min.X = actorLoc.X;
+			}
+			if (actorLoc.Y < mRect.Min.Y)
+			{
+				mRect.Min.Y = actorLoc.Y;
+			}
+		}
+		// cannot insert out of bounds
+		else
+		{
+			return false;
+		}
 	}
 
 	// has capacity and not yet subdivided
