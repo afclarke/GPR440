@@ -12,7 +12,8 @@ UENUM(BlueprintType)
 enum class EUtilActionType : uint8
 {
 	INVALID = 0,
-	FLEE
+	HIDE,
+	EXPLORE,
 };
 
 /**

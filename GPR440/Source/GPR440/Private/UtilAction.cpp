@@ -9,6 +9,7 @@
 //	mConsiderations = considerations;
 //	return this;
 //}
+PRAGMA_DISABLE_OPTIMIZATION
 void UUtilAction::Init()
 {
 	for (TSubclassOf<UUtilConsideration> considerationClass : mConsiderations)
@@ -30,3 +31,4 @@ Utility UUtilAction::evaluate(AUtilAgent* pAgent)
 	}
 	return utility;
 }
+PRAGMA_ENABLE_OPTIMIZATION

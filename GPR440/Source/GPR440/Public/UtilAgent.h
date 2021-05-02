@@ -8,34 +8,34 @@
 #include "UtilAgent.generated.h"
 
 UCLASS(Abstract)
-class GPR440_API AUtilAgent : public ACharacter
+class GPR440_API AUtilAgent : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	AUtilAgent();
 
-	UFUNCTION(BlueprintCallable)
-	float GetHealth() { return mHealth; }
-	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float mMaxHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float mHealth;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float mMaxHunger;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float mHunger;
 	
-public:
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UUtilDeciderComponent* mpUtilDeciderComponent;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	bool Act(EUtilActionType actionType);
 	//PURE_VIRTUAL(AUtilAgent::Act)
-
-	UPROPERTY(BlueprintReadWrite)
-	float mHealth;
 
 };
