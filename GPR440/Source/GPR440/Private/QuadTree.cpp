@@ -86,6 +86,8 @@ TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius, FName
 				continue;
 			}
 			// not matching tag
+			bool hasTag = actor->ActorHasTag(forTag);
+			bool existsTag = forTag != NAME_None;
 			if(forTag != NAME_None && !actor->ActorHasTag(forTag))
 			{
 				continue;
@@ -102,7 +104,7 @@ TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius, FName
 	// query sub quadrants
 	for (int32 i = 0; i < 4; i++)
 	{
-		actorsInRadius.Insert(mpNodes[i]->QuerySqrRadius(pActor, sqrRadius), actorsInRadius.Num());
+		actorsInRadius.Insert(mpNodes[i]->QuerySqrRadius(pActor, sqrRadius, forTag), actorsInRadius.Num());
 	}
 	return actorsInRadius;
 }
