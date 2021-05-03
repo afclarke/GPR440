@@ -55,4 +55,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	TArray<UUtilConsideration*> mConsiderationObjs;
 
+	UPROPERTY(BlueprintReadOnly)
+	float mUtilityCache;
+
 };

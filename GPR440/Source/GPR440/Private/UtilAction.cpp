@@ -29,6 +29,7 @@ Utility UUtilAction::evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode)
 	{
 		utility *= mConsiderationObjs[i]->consider(pAgent, pGameMode);
 	}
+	mUtilityCache = utility;
 	return utility;
 }
 PRAGMA_ENABLE_OPTIMIZATION

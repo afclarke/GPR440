@@ -18,7 +18,7 @@ class GPR440_API UUtilConsideration : public UObject
 	GENERATED_BODY()
 
 public:
-	Utility consider(AUtilAgent* pAgent, AUtilGameMode* pGameMode) const;
+	Utility consider(AUtilAgent* pAgent, AUtilGameMode* pGameMode);
 
 protected:
 	// perceive normalized knowledge
@@ -31,5 +31,9 @@ public:
 	UCurveFloat* mCurve;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor mCurveColor = FLinearColor::White;
-
+	
+	UPROPERTY(BlueprintReadOnly)
+	float mUtilityCache;
+	UPROPERTY(BlueprintReadOnly)
+	float mNormalizedInputCache;
 };
