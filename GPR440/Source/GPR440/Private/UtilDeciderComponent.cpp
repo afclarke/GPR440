@@ -52,14 +52,26 @@ void UUtilDeciderComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	mActionObjs.Empty();
+	mActionObjs.SetNum(0);
 	for (TSubclassOf<UUtilAction> actionClass : mActions)
 	{
-		UUtilAction* newAction = Cast<UUtilAction>(actionClass->ClassDefaultObject);
+		
+		UUtilAction* newAction = NewObject<UUtilAction>(this, actionClass);
 		//UUtilAction* newAction = NewObject<UUtilAction>(
 		//	this, actionClass->StaticClass());
 		newAction->Init();
 		mActionObjs.Add(newAction);
 	}
+}
+
+void UUtilDeciderComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	for (UUtilAction* actionObj : mActionObjs)
+	{
+		actionObj->Cleanup();
+	}
+	mActionObjs.Empty();
 }
 
 

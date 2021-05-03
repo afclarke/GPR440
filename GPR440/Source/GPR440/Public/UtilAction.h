@@ -34,6 +34,7 @@ public:
 	//UUtilAction* Construct(EUtilActionType actionType, TArray<UUtilConsideration*> considerations);
 
 	void Init();
+	void Cleanup();
 	
 	// normal, multiplicative evaluation of considerations
 	Utility evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode);

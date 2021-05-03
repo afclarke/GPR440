@@ -12,14 +12,20 @@
 PRAGMA_DISABLE_OPTIMIZATION
 void UUtilAction::Init()
 {
+	mConsiderationObjs.Empty();
+	mConsiderationObjs.SetNum(0);
 	for (TSubclassOf<UUtilConsideration> considerationClass : mConsiderations)
 	{
-		UUtilConsideration* newConsideration = Cast<UUtilConsideration>(
-			considerationClass->ClassDefaultObject);
+		UUtilConsideration* newConsideration = NewObject<UUtilConsideration>(this, considerationClass);
 		//UUtilConsideration* newConsideration = NewObject<UUtilConsideration>(
 		//	this, considerationClass->StaticClass());
 		mConsiderationObjs.Add(newConsideration);
 	}
+}
+
+void UUtilAction::Cleanup()
+{
+	mConsiderationObjs.Empty();
 }
 
 Utility UUtilAction::evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode)
