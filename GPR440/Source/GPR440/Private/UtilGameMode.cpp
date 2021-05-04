@@ -13,6 +13,9 @@ void AUtilGameMode::BeginPlay()
 {
 	mpQuadTree = NewObject<UQuadTree>(this, UQuadTree::StaticClass());
 	mpQuadTree->Init(0, FBox2D());
+
+	pTankFlowField = Cast<ATankFlowField>(UGameplayStatics::GetActorOfClass(
+		GetWorld(), ATankFlowField::StaticClass()));
 }
 
 void AUtilGameMode::Tick(float DeltaSeconds)

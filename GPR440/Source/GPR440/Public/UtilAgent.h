@@ -23,20 +23,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float mMaxHealth;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float mHealth;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float mMaxHunger;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float mHunger;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FName mFlockMateTag;
-
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* mpRootMesh;

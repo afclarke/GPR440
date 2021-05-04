@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "QuadTree.h"
+#include "TankFlowField.h"
 #include "UtilAgent.h"
 #include "UtilGameMode.generated.h"
 
@@ -23,8 +24,8 @@ protected:
 	void Tick(float DeltaSeconds) override;
 
 public:
-	//UPROPERTY(BlueprintReadOnly)
-	//TArray<AUtilAgent*> mpUtilAgents;
 	UPROPERTY(BlueprintReadOnly)
 	UQuadTree* mpQuadTree;
+	UPROPERTY(BlueprintReadOnly)
+	ATankFlowField* pTankFlowField;
 };
