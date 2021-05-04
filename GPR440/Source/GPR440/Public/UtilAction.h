@@ -14,6 +14,7 @@ enum class EUtilActionType : uint8
 	INVALID = 0,
 	HIDE,
 	EXPLORE,
+	FLOCK,
 };
 
 /**
@@ -58,5 +59,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	float mUtilityCache;
-
+	UPROPERTY(BlueprintReadOnly)
+	bool mChosenCache;
 };

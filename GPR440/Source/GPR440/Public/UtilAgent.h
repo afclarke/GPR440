@@ -15,6 +15,10 @@ class GPR440_API AUtilAgent : public APawn
 public:
 	AUtilAgent();
 
+	UFUNCTION(BlueprintCallable)
+	FVector2D Flock(float separationRadiusSqr, float alignmentRadiusSqr, float cohesionRadiusSqr,
+		float separationWeight, float alignmentWeight, float cohesionWeight, FName withTag);
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -29,8 +33,13 @@ public:
 	float mMaxHunger;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float mHunger;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FName mFlockMateTag;
+
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UStaticMeshComponent* mpRootMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UUtilDeciderComponent* mpUtilDeciderComponent;
 

@@ -21,8 +21,8 @@ EUtilActionType UUtilDeciderComponent::decide(AUtilAgent* pAgent)
 {
 	AUtilGameMode* pGameMode = Cast<AUtilGameMode>(
 		UGameplayStatics::GetGameMode(GetWorld()));
-	
-	EUtilActionType decidedAction = EUtilActionType::INVALID;
+
+	UUtilAction* decidedAction = nullptr;
 	switch (mDecisionMethod)
 	{
 	case EUtilDecisionMethod::GREATEST:
@@ -30,11 +30,12 @@ EUtilActionType UUtilDeciderComponent::decide(AUtilAgent* pAgent)
 		Utility greatestUtil = -1;
 		for (UUtilAction* action : mActionObjs)
 		{
+			action->mChosenCache = false;
 			Utility actionUtil = action->evaluate(pAgent, pGameMode);
-			if(actionUtil >= greatestUtil)
+			if (actionUtil >= greatestUtil)
 			{
 				greatestUtil = actionUtil;
-				decidedAction = action->mActionType;
+				decidedAction = action;
 			}
 		}
 		break;
@@ -44,7 +45,13 @@ EUtilActionType UUtilDeciderComponent::decide(AUtilAgent* pAgent)
 		break;
 	}
 	}
-	return decidedAction;
+
+	if (decidedAction)
+	{
+		decidedAction->mChosenCache = true;
+		return decidedAction->mActionType;
+	}
+	return EUtilActionType::INVALID;
 }
 
 
@@ -56,7 +63,7 @@ void UUtilDeciderComponent::BeginPlay()
 	mActionObjs.SetNum(0);
 	for (TSubclassOf<UUtilAction> actionClass : mActions)
 	{
-		
+
 		UUtilAction* newAction = NewObject<UUtilAction>(this, actionClass);
 		//UUtilAction* newAction = NewObject<UUtilAction>(
 		//	this, actionClass->StaticClass());
