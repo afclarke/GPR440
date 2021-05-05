@@ -17,6 +17,8 @@ enum class EUtilActionType : uint8
 	FLOCK,
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FActDelegate);
+
 /**
  *
  */
@@ -43,10 +45,12 @@ public:
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EUtilActionType mActionType;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<UUtilConsideration>> mConsiderations;
 
+	UPROPERTY(BlueprintAssignable)
+	FActDelegate mAct;
+	
 	// ideally, we'd have void function pointers for the action,
 	// instead of an enum which puts the onus of execution on the agent
 	//void(AAgent::* mAct)();
@@ -61,4 +65,5 @@ public:
 	float mUtilityCache;
 	UPROPERTY(BlueprintReadOnly)
 	bool mChosenCache;
+	
 };

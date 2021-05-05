@@ -82,12 +82,87 @@ FVector2D AUtilAgent::Flock(float separationRadiusSqr, float alignmentRadiusSqr,
 void AUtilAgent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	Init();
+}
+
+void AUtilAgent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	
+	Cleanup();
 }
 
 void AUtilAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	Act(mpUtilDeciderComponent->decide(this));
+	
+	Decide();
 }
+
+void AUtilAgent::Init()
+{
+	mActionObjs.Empty();
+	mActionObjs.SetNum(0);
+	for (TSubclassOf<UUtilAction> actionClass : mActions)
+	{
+		UUtilAction* newAction = NewObject<UUtilAction>(this, actionClass);
+		//UUtilAction* newAction = NewObject<UUtilAction>(
+		//	this, actionClass->StaticClass());
+		newAction->Init();
+		mActionObjs.Add(newAction);
+	}
+	BindActs(mActionObjs);
+	InitUtilWidget(mActionObjs);
+}
+
+void AUtilAgent::Cleanup()
+{
+	AActor* pOwner = GetOwner();
+	for (UUtilAction* actionObj : mActionObjs)
+	{
+		// remove owner's bound actions
+		actionObj->mAct.RemoveAll(pOwner);
+		actionObj->Cleanup();
+	}
+	mActionObjs.Empty();
+}
+
+EUtilActionType AUtilAgent::Decide()
+{
+	AUtilGameMode* pGameMode = Cast<AUtilGameMode>(
+		UGameplayStatics::GetGameMode(GetWorld()));
+
+	UUtilAction* decidedAction = nullptr;
+	switch (mDecisionMethod)
+	{
+	case EUtilDecisionMethod::GREATEST:
+	{
+		Utility greatestUtil = -1;
+		for (UUtilAction* action : mActionObjs)
+		{
+			action->mChosenCache = false;
+			Utility actionUtil = action->evaluate(this, pGameMode);
+			if (actionUtil >= greatestUtil)
+			{
+				greatestUtil = actionUtil;
+				decidedAction = action;
+			}
+		}
+		break;
+	}
+	case EUtilDecisionMethod::WEIGHTED_RANDOM:
+	{
+		break;
+	}
+	}
+
+	if (decidedAction)
+	{
+		decidedAction->mChosenCache = true;
+		return decidedAction->mActionType;
+	}
+	return EUtilActionType::INVALID;
+}
+
 PRAGMA_ENABLE_OPTIMIZATION
