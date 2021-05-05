@@ -29,7 +29,7 @@ void AUtilGameMode::Tick(float DeltaSeconds)
 	mpQuadTree->Clear();
 	TArray<AActor*> agents;
 	// TODO: Maintain a collection of organized actors
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), agents);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUtilAgent::StaticClass(), agents);
 	// TODO: cont. of ghetto food pellet class
 	TArray<AActor*> foodPellets;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), mFoodPelletClass, foodPellets);
