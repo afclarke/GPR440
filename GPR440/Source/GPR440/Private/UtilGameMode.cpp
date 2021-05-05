@@ -28,5 +28,11 @@ void AUtilGameMode::Tick(float DeltaSeconds)
 	{
 		mpQuadTree->Insert(agent);
 	}
-	mpQuadTree->Draw(GetWorld());
+
+	// draw debug
+	if(mDrawDebug)
+	{
+		mpQuadTree->Draw(GetWorld());
+		pTankFlowField->DebugDraw();
+	}
 }

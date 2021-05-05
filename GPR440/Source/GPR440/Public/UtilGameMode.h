@@ -28,4 +28,7 @@ public:
 	UQuadTree* mpQuadTree;
 	UPROPERTY(BlueprintReadOnly)
 	ATankFlowField* pTankFlowField;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool mDrawDebug = true;
 };

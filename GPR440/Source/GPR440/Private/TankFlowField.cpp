@@ -106,7 +106,6 @@ void ATankFlowField::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CalcFlow();
-	DebugDraw();
 }
 
 void ATankFlowField::Init()
