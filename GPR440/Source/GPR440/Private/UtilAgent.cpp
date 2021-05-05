@@ -96,8 +96,12 @@ void AUtilAgent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AUtilAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	Decide();
+
+	UUtilAction* chosenAction = Decide();
+	if(chosenAction)
+	{
+		chosenAction->mAct.Broadcast();
+	}
 }
 
 void AUtilAgent::Init()
@@ -128,7 +132,7 @@ void AUtilAgent::Cleanup()
 	mActionObjs.Empty();
 }
 
-EUtilActionType AUtilAgent::Decide()
+UUtilAction* AUtilAgent::Decide()
 {
 	AUtilGameMode* pGameMode = Cast<AUtilGameMode>(
 		UGameplayStatics::GetGameMode(GetWorld()));
@@ -160,9 +164,8 @@ EUtilActionType AUtilAgent::Decide()
 	if (decidedAction)
 	{
 		decidedAction->mChosenCache = true;
-		return decidedAction->mActionType;
 	}
-	return EUtilActionType::INVALID;
+	return decidedAction;
 }
 
 PRAGMA_ENABLE_OPTIMIZATION

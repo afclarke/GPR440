@@ -39,7 +39,7 @@ protected:
 private:
 	void Init();
 	void Cleanup();
-	EUtilActionType Decide();
+	UUtilAction* Decide();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
