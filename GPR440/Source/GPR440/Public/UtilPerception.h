@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UtilConsideration.generated.h"
+#include "UtilPerception.generated.h"
 
 #define Utility float
 class AUtilAgent;
@@ -13,7 +13,7 @@ class AUtilGameMode;
  *
  */
 UCLASS(Abstract, Blueprintable)
-class GPR440_API UUtilConsideration : public UObject
+class GPR440_API UUtilPerception : public UObject
 {
 	GENERATED_BODY()
 

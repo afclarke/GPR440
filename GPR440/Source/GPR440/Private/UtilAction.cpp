@@ -7,17 +7,17 @@ PRAGMA_DISABLE_OPTIMIZATION
 void UUtilAction::Init()
 {
 	mConsiderationObjs.Empty();
-	for (TSubclassOf<UUtilConsideration> considerationClass : mConsiderations)
+	for (TSubclassOf<UUtilPerception> perceptionClass : mConsiderations)
 	{
-		UUtilConsideration* newConsideration = NewObject<UUtilConsideration>(
-			this, considerationClass);
+		UUtilPerception* newConsideration = NewObject<UUtilPerception>(
+			this, perceptionClass);
 		mConsiderationObjs.Add(newConsideration);
 	}
 	mProbabilityObjs.Empty();
-	for (TSubclassOf<UUtilConsideration> considerationClass : mProbabilities)
+	for (TSubclassOf<UUtilPerception> perceptionClass : mProbabilities)
 	{
-		UUtilConsideration* newProbability = NewObject<UUtilConsideration>(
-			this, considerationClass);
+		UUtilPerception* newProbability = NewObject<UUtilPerception>(
+			this, perceptionClass);
 		mConsiderationObjs.Add(newProbability);
 	}
 }
@@ -32,7 +32,7 @@ Utility UUtilAction::Evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode)
 {
 	// average considerations
 	Utility utility = 0.f;
-	for (UUtilConsideration* consideration : mConsiderationObjs)
+	for (UUtilPerception* consideration : mConsiderationObjs)
 	{
 		utility += consideration->consider(pAgent, pGameMode);
 	}
@@ -42,7 +42,7 @@ Utility UUtilAction::Evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode)
 		utility /= numConsiderations;
 	}
 	// multiply by probabilities
-	for (UUtilConsideration* probability : mProbabilityObjs)
+	for (UUtilPerception* probability : mProbabilityObjs)
 	{
 		utility *= probability->consider(pAgent, pGameMode);
 	}

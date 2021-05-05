@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UtilConsideration.h"
+#include "UtilPerception.h"
 #include "UtilAction.generated.h"
 
 class AUtilAgent;
@@ -38,9 +38,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EUtilActionType mActionType;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<UUtilConsideration>> mConsiderations;
+	TArray<TSubclassOf<UUtilPerception>> mConsiderations;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<UUtilConsideration>> mProbabilities;
+	TArray<TSubclassOf<UUtilPerception>> mProbabilities;
 
 	UPROPERTY(BlueprintAssignable)
 	FActDelegate mAct;
@@ -48,9 +48,9 @@ public:
 	// ideally, for efficiency & data-driven, this would be an array of struct objects,
 	// but USTRUCT polymorphism isn't possible and all Util should be BP-able
 	UPROPERTY(BlueprintReadOnly)
-	TArray<UUtilConsideration*> mConsiderationObjs;
+	TArray<UUtilPerception*> mConsiderationObjs;
 	UPROPERTY(BlueprintReadOnly)
-	TArray<UUtilConsideration*> mProbabilityObjs;
+	TArray<UUtilPerception*> mProbabilityObjs;
 
 	UPROPERTY(BlueprintReadOnly)
 	float mUtilityCache;
