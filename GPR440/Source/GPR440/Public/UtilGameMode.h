@@ -6,7 +6,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "QuadTree.h"
 #include "TankFlowField.h"
-#include "UtilAgent.h"
 #include "UtilGameMode.generated.h"
 
 /**

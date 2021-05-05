@@ -157,6 +157,17 @@ UUtilAction* AUtilAgent::Decide()
 	}
 	case EUtilDecisionMethod::WEIGHTED_RANDOM:
 	{
+		float totalWeight = 0.f;
+		for (UUtilAction* action : mActionObjs)
+		{
+			float prevWeight = totalWeight;
+			totalWeight += action->evaluate(this, pGameMode);
+			float rand = FMath::RandRange(0.f, totalWeight);
+			if(rand > prevWeight)
+			{
+				decidedAction = action;
+			}
+		}
 		break;
 	}
 	}
