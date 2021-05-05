@@ -3,38 +3,50 @@
 
 #include "UtilAction.h"
 
-//UUtilAction* UUtilAction::Construct(EUtilActionType actionType, TArray<UUtilConsideration*> considerations)
-//{
-//	mActionType = actionType;
-//	mConsiderations = considerations;
-//	return this;
-//}
 PRAGMA_DISABLE_OPTIMIZATION
 void UUtilAction::Init()
 {
 	mConsiderationObjs.Empty();
-	mConsiderationObjs.SetNum(0);
 	for (TSubclassOf<UUtilConsideration> considerationClass : mConsiderations)
 	{
-		UUtilConsideration* newConsideration = NewObject<UUtilConsideration>(this, considerationClass);
-		//UUtilConsideration* newConsideration = NewObject<UUtilConsideration>(
-		//	this, considerationClass->StaticClass());
+		UUtilConsideration* newConsideration = NewObject<UUtilConsideration>(
+			this, considerationClass);
 		mConsiderationObjs.Add(newConsideration);
+	}
+	mProbabilityObjs.Empty();
+	for (TSubclassOf<UUtilConsideration> considerationClass : mProbabilities)
+	{
+		UUtilConsideration* newProbability = NewObject<UUtilConsideration>(
+			this, considerationClass);
+		mConsiderationObjs.Add(newProbability);
 	}
 }
 
 void UUtilAction::Cleanup()
 {
 	mConsiderationObjs.Empty();
+	mProbabilityObjs.Empty();
 }
 
-Utility UUtilAction::evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode)
+Utility UUtilAction::Evaluate(AUtilAgent* pAgent, AUtilGameMode* pGameMode)
 {
-	Utility utility = 1.f;
-	for (int i = 0; i < mConsiderations.Num(); i++)
+	// average considerations
+	Utility utility = 0.f;
+	for (UUtilConsideration* consideration : mConsiderationObjs)
 	{
-		utility *= mConsiderationObjs[i]->consider(pAgent, pGameMode);
+		utility += consideration->consider(pAgent, pGameMode);
 	}
+	int32 numConsiderations = mConsiderationObjs.Num();
+	if(numConsiderations > 0)
+	{
+		utility /= numConsiderations;
+	}
+	// multiply by probabilities
+	for (UUtilConsideration* probability : mProbabilityObjs)
+	{
+		utility *= probability->consider(pAgent, pGameMode);
+	}
+	// cache and return
 	mUtilityCache = utility;
 	return utility;
 }

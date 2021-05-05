@@ -3,6 +3,7 @@
 
 #include "UtilGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "UtilAgent.h"
 
 AUtilGameMode::AUtilGameMode()
 {

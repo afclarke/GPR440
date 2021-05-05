@@ -111,8 +111,6 @@ void AUtilAgent::Init()
 	for (TSubclassOf<UUtilAction> actionClass : mActions)
 	{
 		UUtilAction* newAction = NewObject<UUtilAction>(this, actionClass);
-		//UUtilAction* newAction = NewObject<UUtilAction>(
-		//	this, actionClass->StaticClass());
 		newAction->Init();
 		mActionObjs.Add(newAction);
 	}
@@ -146,7 +144,7 @@ UUtilAction* AUtilAgent::Decide()
 		for (UUtilAction* action : mActionObjs)
 		{
 			action->mChosenCache = false;
-			Utility actionUtil = action->evaluate(this, pGameMode);
+			Utility actionUtil = action->Evaluate(this, pGameMode);
 			if (actionUtil >= greatestUtil)
 			{
 				greatestUtil = actionUtil;
@@ -161,7 +159,7 @@ UUtilAction* AUtilAgent::Decide()
 		for (UUtilAction* action : mActionObjs)
 		{
 			float prevWeight = totalWeight;
-			totalWeight += action->evaluate(this, pGameMode);
+			totalWeight += action->Evaluate(this, pGameMode);
 			float rand = FMath::RandRange(0.f, totalWeight);
 			if(rand > prevWeight)
 			{
