@@ -30,4 +30,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool mDrawDebug = true;
+
+private:
+	UClass* mFoodPelletClass;
 };

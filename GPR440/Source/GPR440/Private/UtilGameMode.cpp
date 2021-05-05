@@ -8,6 +8,10 @@
 AUtilGameMode::AUtilGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	// TODO: This is super ghetto and food should have a C++ class, but get it by name for now
+	static ConstructorHelpers::FClassFinder<AActor> FoodPelletClass(TEXT("/Game/Blueprints/BP_FoodPellet"));
+	mFoodPelletClass = FoodPelletClass.Class;
 }
 
 void AUtilGameMode::BeginPlay()
@@ -24,9 +28,12 @@ void AUtilGameMode::Tick(float DeltaSeconds)
 	// rebuild QuadTree
 	mpQuadTree->Clear();
 	TArray<AActor*> agents;
-	// TODO: this should only insert specific classes like agents,
-	// but for demo convenience, all actors (food) are inserted
+	// TODO: Maintain a collection of organized actors
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), agents);
+	// TODO: cont. of ghetto food pellet class
+	TArray<AActor*> foodPellets;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), mFoodPelletClass, foodPellets);
+	agents.Append(foodPellets);
 	for (AActor* agent : agents)
 	{
 		mpQuadTree->Insert(agent);
