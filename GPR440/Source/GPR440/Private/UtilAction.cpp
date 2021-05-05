@@ -18,7 +18,7 @@ void UUtilAction::Init()
 	{
 		UUtilPerception* newProbability = NewObject<UUtilPerception>(
 			this, perceptionClass);
-		mConsiderationObjs.Add(newProbability);
+		mProbabilityObjs.Add(newProbability);
 	}
 }
 

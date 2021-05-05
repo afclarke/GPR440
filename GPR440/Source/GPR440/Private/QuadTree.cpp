@@ -109,9 +109,28 @@ TArray<AActor*> UQuadTree::QuerySqrRadius(AActor* pActor, float sqrRadius, FName
 	return actorsInRadius;
 }
 
+AActor* UQuadTree::FindClosestInRadius(AActor* pActor, float sqrRadius, FName forTag)
+{
+	TArray<AActor*> actorsInRadius = QuerySqrRadius(pActor, sqrRadius, forTag);
+	AActor* closestActor = nullptr;
+	float closestSqrDist = sqrRadius;
+	for (AActor* actor : actorsInRadius)
+	{
+		float sqrDist = (pActor->GetActorLocation() - actor->GetActorLocation()).SizeSquared();
+		if(sqrDist <= closestSqrDist)
+		{
+			closestSqrDist = sqrDist;
+			closestActor = actor;
+		}
+	}
+	return closestActor;
+}
+
 void UQuadTree::Draw(UWorld* pWorld) const
 {
-	DrawDebugBox(pWorld, FVector(mRect.GetCenter(), 200), FVector(mRect.GetExtent(), 1), FColor::Magenta, false, -1, 0, 15);
+	DrawDebugBox(pWorld, FVector(mRect.GetCenter(), 200),
+		FVector(mRect.GetExtent(), 1), FColor::Magenta, false,
+		-1, 0, 20);
 	if (mSubdivided)
 	{
 		for (int32 i = 0; i < 4; i++)

@@ -23,6 +23,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	TArray<AActor*> QuerySqrRadius(AActor* pActor, float sqrRadius, FName forTag = NAME_None);
 	UFUNCTION(BlueprintCallable)
+	AActor* FindClosestInRadius(AActor* pActor, float sqrRadius, FName forTag = NAME_None);
+	UFUNCTION(BlueprintCallable)
 	void Draw(UWorld* pWorld) const;
 
 protected:

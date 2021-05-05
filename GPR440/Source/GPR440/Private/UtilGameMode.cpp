@@ -24,7 +24,9 @@ void AUtilGameMode::Tick(float DeltaSeconds)
 	// rebuild QuadTree
 	mpQuadTree->Clear();
 	TArray<AActor*> agents;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUtilAgent::StaticClass(), agents);
+	// TODO: this should only insert specific classes like agents,
+	// but for demo convenience, all actors (food) are inserted
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), agents);
 	for (AActor* agent : agents)
 	{
 		mpQuadTree->Insert(agent);
