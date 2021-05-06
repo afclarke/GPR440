@@ -19,6 +19,7 @@ enum class EUtilActionType : uint8
 	EAT,
 	ATTACK,
 	IDLE,
+	DEFEND
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActDelegate, float, DeltaTime);
