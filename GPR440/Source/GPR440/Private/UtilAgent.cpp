@@ -158,6 +158,7 @@ UUtilAction* AUtilAgent::Decide()
 		float totalWeight = 0.f;
 		for (UUtilAction* action : mActionObjs)
 		{
+			action->mChosenCache = false;
 			float prevWeight = totalWeight;
 			totalWeight += action->Evaluate(this, pGameMode);
 			float rand = FMath::RandRange(0.f, totalWeight);
