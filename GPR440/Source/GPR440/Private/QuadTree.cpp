@@ -6,6 +6,7 @@
 PRAGMA_DISABLE_OPTIMIZATION
 bool UQuadTree::Insert(AActor* pActor)
 {
+	if (!pActor) return false;
 	const FVector2D actorLoc = FVector2D(pActor->GetActorLocation());
 
 	// actor not inside bounds
@@ -38,17 +39,26 @@ bool UQuadTree::Insert(AActor* pActor)
 		}
 	}
 
-	// has capacity and not yet subdivided
+	// has capacity and not yet subdivided, add
 	if (mIsLeaf || mpActors.Num() < mCapacity && !mSubdivided)
 	{
 		mpActors.Add(pActor);
 		return true;
 	}
 
-	// at capacity and not subdivided
-	if (!mSubdivided)
+	if(mDepth < mMaxDepth)
 	{
-		Subdivide();
+		// at capacity and not subdivided
+		if(!mSubdivided)
+		{
+			Subdivide();
+		}
+	}
+	// leaf at capacity, keep adding w/o subdividing
+	else
+	{
+		mpActors.Add(pActor);
+		return true;
 	}
 
 	// try insertion on each sub quad
