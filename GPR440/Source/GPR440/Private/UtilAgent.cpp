@@ -100,7 +100,7 @@ void AUtilAgent::Tick(float DeltaTime)
 	UUtilAction* chosenAction = Decide();
 	if(chosenAction)
 	{
-		chosenAction->mAct.Broadcast();
+		chosenAction->mAct.Broadcast(DeltaTime);
 	}
 }
 
@@ -113,8 +113,8 @@ void AUtilAgent::Init()
 		UUtilAction* newAction = NewObject<UUtilAction>(this, actionClass);
 		newAction->Init();
 		mActionObjs.Add(newAction);
+		BindAct(newAction);
 	}
-	BindActs(mActionObjs);
 	InitUtilWidget(mActionObjs);
 }
 

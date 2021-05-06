@@ -27,7 +27,7 @@ public:
 		float separationWeight, float alignmentWeight, float cohesionWeight, FName withTag);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BindActs(const TArray<UUtilAction*>& pActions);
+	void BindAct(UUtilAction* pAction);
 	UFUNCTION(BlueprintImplementableEvent)
 	void InitUtilWidget(const TArray<UUtilAction*>& pActions);
 	

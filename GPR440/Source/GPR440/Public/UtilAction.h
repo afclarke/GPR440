@@ -15,9 +15,13 @@ enum class EUtilActionType : uint8
 	HIDE,
 	EXPLORE,
 	FLOCK,
+	EXTEND,
+	EAT,
+	ATTACK,
+	IDLE,
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FActDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActDelegate, float, DeltaTime);
 
 /**
  *
