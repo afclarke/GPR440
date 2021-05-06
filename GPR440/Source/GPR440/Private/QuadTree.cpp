@@ -182,7 +182,7 @@ void UQuadTree::Subdivide()
 	for (int32 i = 0; i < mCapacity; i++)
 	{
 		int32 j = 0;
-		while (!mpNodes[j]->Insert(mpActors[i]))
+		while (j < 4 && !mpNodes[j]->Insert(mpActors[i]))
 		{
 			j++;
 		}
